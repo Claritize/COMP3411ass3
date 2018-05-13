@@ -34,11 +34,10 @@ public class Agent {
          * 1. Look around to pick up items and record points of interests, the AI also maps out its own grid
          *    where the starting location is 0,0 and this is updated as simulation continues
          */
-
         
         map.addMap(view, orient, c_x, c_y);
+        System.out.println(c_x + " , " + c_y);
         map.printMap();
-        System.exit(0);
 
         // Pick up the key otherwise randomly wander
         if (keys == 0) {
@@ -53,7 +52,6 @@ public class Agent {
             }
         }
         
-        System.out.println(c_x + " , " + c_y);
         System.exit(0);
         return 'f';
     }
