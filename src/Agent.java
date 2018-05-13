@@ -26,6 +26,10 @@ public class Agent {
     //Map object
     Map map = new Map();
 
+    //List of POI
+    ArrayList<POI> pois = new ArrayList<POI>();
+
+
     public char get_action(char view[][]) {
 
         /**
@@ -37,23 +41,74 @@ public class Agent {
         
         map.addMap(view, orient, c_x, c_y);
         System.out.println(c_x + " , " + c_y);
-        map.printMap();
 
-        // Pick up the key otherwise randomly wander
-        if (keys == 0) {
-
-            boolean keyFound = false;
-            for (int i = 0; i < 5; i++) {
-                for (int j = 0; j < 5; j++) {
-                    if (view[i][j] == 'k') {
-                        return goDestination(view, i, j);
-                    }
-                }
+        //Scan the view and add POIs
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                if (view[i][j] == 'T' ||
+                    view[i][j] == '-' ||
+                    view[i][j] == 'a' ||
+                    view[i][j] == 'k' ||
+                    view[i][j] == 'o' ||
+                    view[i][j] == 'g') addPOI(view[i][j], j, i);
             }
         }
+
+        //Pop grabable POIs off list and get them
+
+        /*
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                if (view[i][j] == 'k') return goDestination(view, i, j);
+            }
+        }
+        */
         
+        map.printMap();
+        printPOI();
         System.exit(0);
         return 'f';
+    }
+
+    /**
+     * Given local scope co-ordinates, adds general co-ordinate of POI to ArrayList
+     */
+    private void addPOI(char type, int x, int y) {
+
+        int tx, ty;
+
+        //We now need to calculate the general co-ordinates
+        if (orient == '^') {
+            tx = c_x + x - 2;
+            ty = c_y - y + 2;
+        } else if (orient == 'v') {
+            tx = c_x - x + 2;
+            ty = c_y + y - 2;
+        } else if (orient == '>') {
+            tx = c_x - y + 2;
+            ty = c_y - x + 2;
+        } else {
+            tx = c_x + y - 2;
+            ty = c_y + x - 2;
+        }
+
+        //See if the POI already exists in the set
+        for (POI poi : pois) {
+            if (poi.type == type && poi.x == tx && poi.y == ty) return;
+        }
+
+        //If we didn't find an existing one add it to the set
+        pois.add(new POI(type, tx, ty));
+    }
+
+    /**
+     * Print out current POIs
+     */
+    private void printPOI() {
+        
+        for (POI poi : pois) {
+            System.out.println("POI: " + poi.type + " xy: " + poi.x + "," + poi.y);
+        }
     }
 
     /**
