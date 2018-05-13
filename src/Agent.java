@@ -28,15 +28,50 @@ public class Agent {
 
     //List of POI
     ArrayList<POI> pois = new ArrayList<POI>();
+    ArrayList<POI> grabs = new ArrayList<POI>();
 
+    /**
+     * Current objective
+     * curObj = 0: explore
+     *         = 1: grab
+     *         = 2: unlock
+     *         = 3: chop
+     *         = 4: destination
+     * curPOI = co-ords to POI
+     */
+
+    int curObj = 0;
+    POI curPOI = null;
 
     public char get_action(char view[][]) {
 
         /**
+         * TODO:
+         * - Pop off grabables and head towards them
+         * - Make exploring more dynamic, traverse to unexplored areas until all areas explored
+         *   before figuring out what to do next
+         */
+
+        /**
          * Strategy
          * 
-         * 1. Look around to pick up items and record points of interests, the AI also maps out its own grid
-         *    where the starting location is 0,0 and this is updated as simulation continues
+         * 1. Look around to pick up items and record points of interests, will attempt to explore
+         *    entire traversable area before crossing waters
+         * 2. With area explored, attempts logical steps in this fashion
+         *    1. If have key try to unlock door
+         *      1. If door covered by small (1 square) water, try cross water
+         *        1. Use rock first otherwise
+         *        2. No rocks then we use raft
+         *      2. If larger body of water we must use raft
+         *    2. If we don't have a key, try cut down all near by trees and explore new explorable area
+         *       then go back to 1.
+         *    3. If we have explored all areas, unlocked all doors and picked everythingu p, we attempt to cross
+         *       water and explore the all explorable water before embarking on land
+         *      1. Attempt to formulate plan to get back on water, look for more trees
+         *    4. Embark on land and go back to 1. 
+         *    5. If we see treasure, make sure we get it
+         *      1. If we need to cross water to go back, go back to step 1 and redo all proceeding steps 
+         *         with going back to [0,0] as objective
          */
         
         map.addMap(view, orient, c_x, c_y);
@@ -50,11 +85,24 @@ public class Agent {
                     view[i][j] == 'a' ||
                     view[i][j] == 'k' ||
                     view[i][j] == 'o' ||
+                    view[i][j] == 'O' ||
                     view[i][j] == 'g') addPOI(view[i][j], j, i);
             }
         }
 
-        //Pop grabable POIs off list and get them
+        //If we have no current objective, pop grabable POIs off list and get them
+        if (curObj == 0) {
+
+            if (pois.size() > 0) {
+
+
+            } else {
+
+                //If no existing POIs keep exploring
+                //TODO
+                return 'f';
+            }
+        }
 
         /*
         for (int i = 0; i < 5; i++) {
@@ -92,13 +140,29 @@ public class Agent {
             ty = c_y + x - 2;
         }
 
-        //See if the POI already exists in the set
-        for (POI poi : pois) {
-            if (poi.type == type && poi.x == tx && poi.y == ty) return;
-        }
+        //We add it to different lists for simplicity's sake
+        if (type == 'a' ||
+            type == 'k' ||
+            type == 'o' ||
+            type == 'g') {
 
-        //If we didn't find an existing one add it to the set
-        pois.add(new POI(type, tx, ty));
+            //See if the POI already exists in the set
+            for (POI poi : grabs) {
+                if (poi.type == type && poi.x == tx && poi.y == ty) return;
+            }
+
+            //List of grabables
+            grabs.add(new POI(type, tx, ty));
+        } else {
+
+            //See if the POI already exists in the set
+            for (POI poi : pois) {
+                if (poi.type == type && poi.x == tx && poi.y == ty) return;
+            }
+
+            //List of grabables
+            pois.add(new POI(type, tx, ty));
+        }
     }
 
     /**
@@ -107,6 +171,9 @@ public class Agent {
     private void printPOI() {
         
         for (POI poi : pois) {
+            System.out.println("POI: " + poi.type + " xy: " + poi.x + "," + poi.y);
+        }
+        for (POI poi : grabs) {
             System.out.println("POI: " + poi.type + " xy: " + poi.x + "," + poi.y);
         }
     }
