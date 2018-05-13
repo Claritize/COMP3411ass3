@@ -10,4 +10,4 @@ echo -ne "${CYAN}(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧ ~~compiling~~ ٩(◕‿◕｡)۶\r
 javac -d bin src/*.java
 
 echo -e "${PURPLE}(*^-^*) ♡ compiled successfully, all systems are online senpai ♡ (*^-^*)${CYAN}"
-java -cp bin ShipmentPlanner "test"
+java -cp bin Step -i s0.in
