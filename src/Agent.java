@@ -47,6 +47,7 @@ public class Agent {
 
         /**
          * TODO:
+         * - Floodfill algorithm to see if area is fully explored
          * - Pop off grabables and head towards them
          * - Make exploring more dynamic, traverse to unexplored areas until all areas explored
          *   before figuring out what to do next
@@ -75,7 +76,6 @@ public class Agent {
          */
         
         map.addMap(view, orient, c_x, c_y);
-        System.out.println(c_x + " , " + c_y);
 
         //Scan the view and add POIs
         for (int i = 0; i < 5; i++) {
@@ -93,9 +93,11 @@ public class Agent {
         //If we have no current objective, pop grabable POIs off list and get them
         if (curObj == 0) {
 
-            if (pois.size() > 0) {
+            if (grabs.size() > 0) {
 
-
+                //Pop off the list
+                curPOI = grabs.remove(0);
+                curObj = 1;
             } else {
 
                 //If no existing POIs keep exploring
@@ -170,9 +172,11 @@ public class Agent {
      */
     private void printPOI() {
         
+        System.out.println("POIS:");
         for (POI poi : pois) {
             System.out.println("POI: " + poi.type + " xy: " + poi.x + "," + poi.y);
         }
+        System.out.println("grabs:");
         for (POI poi : grabs) {
             System.out.println("POI: " + poi.type + " xy: " + poi.x + "," + poi.y);
         }
