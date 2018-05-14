@@ -80,6 +80,7 @@ public class Agent {
         
         map.addMap(view, orient, c_x, c_y);
         map.printMap();
+        System.out.println("AgentPOS = " + c_x + "," + c_y);
 
         for (int i = 0; i < 5; i++) {
             for (int j = 0; j < 5; j++) {
@@ -124,12 +125,61 @@ public class Agent {
 
         time++;
         //We move to our current objective
-        if (time < 30) {
-            return travelDest(curPOI.x, curPOI.y);
+        if (time < 17) {
+            char travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y);
+            System.out.println("direction: " + travelDir);
+            if (orient == travelDir) {
+                return 'f';
+            } else if (travelDir == '^') {
+                if (orient == '>') {
+                    orient = '^';
+                    return 'l';
+                } else if (orient == '<') {
+                    orient = '^';
+                    return 'r';
+                } else {
+                    orient = '<';
+                    return 'r';
+                }
+            } else if (travelDir == '>') {
+                if (orient == '^') {
+                    orient = '>';
+                    return 'r';
+                } else if (orient == '<') {
+                    orient = '^';
+                    return 'r';
+                } else {
+                    orient = '>';
+                    return 'l';
+                }
+            } else if (travelDir == '<') {
+                if (orient == '>') {
+                    orient = '^';
+                    return 'l';
+                } else if (orient == '^') {
+                    orient = '<';
+                    return 'l';
+                } else {
+                    orient = '<';
+                    return 'r';
+                }
+            } else {
+                if (orient == '>') {
+                    orient = 'v';
+                    return 'r';
+                } else if (orient == '<') {
+                    orient = 'v';
+                    return 'l';
+                } else {
+                    orient = '>';
+                    return 'r';
+                }
+            }
         }
         
         map.printMap();
         printPOI();
+        System.out.println("lel" + map.AStarTravel(2, -2, 0, 0));
         System.exit(0);
         return 'f';
     }
@@ -355,6 +405,12 @@ public class Agent {
         } else {
             //If we aren't directly in line with the destination on an axis
             //We attempt to move closer to it.
+
+            //This part uses
+
+
+            System.out.println("I shouldn't be here :(");
+            System.exit(0);
             return 'f';
         }
     }
