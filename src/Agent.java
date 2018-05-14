@@ -116,6 +116,8 @@ public class Agent {
         
         map.printMap();
         printPOI();
+        POI lol = map.floodSearch(0,0);
+        System.out.println(lol.x + "," + lol.y);
         System.exit(0);
         return 'f';
     }
@@ -155,6 +157,7 @@ public class Agent {
 
             //List of grabables
             grabs.add(new POI(type, tx, ty));
+
         } else {
 
             //See if the POI already exists in the set
@@ -172,13 +175,12 @@ public class Agent {
      */
     private void printPOI() {
         
-        System.out.println("POIS:");
+        System.out.println("current: " + curPOI.type);
         for (POI poi : pois) {
             System.out.println("POI: " + poi.type + " xy: " + poi.x + "," + poi.y);
         }
-        System.out.println("grabs:");
         for (POI poi : grabs) {
-            System.out.println("POI: " + poi.type + " xy: " + poi.x + "," + poi.y);
+            System.out.println("grab: " + poi.type + " xy: " + poi.x + "," + poi.y);
         }
     }
 

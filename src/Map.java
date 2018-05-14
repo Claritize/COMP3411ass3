@@ -10,6 +10,9 @@ public class Map {
     //Agent starts at grid [80,80] by default
     private char map[][];
 
+    //Used for floodfill algorithm
+    private boolean found;
+
     public Map() {
 
         map = new char[162][162];
@@ -66,6 +69,58 @@ public class Map {
                 }
             }
         }
+    }
+
+    /**
+     * Flood searches for unexplored areas
+     * Takes a 0,0 origin scoped co-ordinate
+     */
+    public POI floodSearch(int x, int y) {
+
+        //Convert co-ordinates to map's scope
+        int c_x = 80 + x;
+        int c_y = 80 - y;
+
+        found = false;
+        POI retVal = RfloodSearch(found, c_x, c_y);
+        retVal.x = retVal.x - 80;
+        retVal.y = 80 - retVal.y;
+        
+        return retVal;
+    }
+
+    private POI RfloodSearch(boolean found, int x, int y) {
+        
+        //Base cases
+        if (found == true) return null;
+        if (map[y][x] == '*' ||
+            map[y][x] == 'T' ||
+            map[y][x] == '-') return null;
+        if (map[y][x] == '=') {
+            found = true;
+            return new POI('=', x, y);
+        }
+        
+        //Recursive call
+        POI retVal;
+        retVal = RfloodSearch(found, x+1, y+1);
+        if (retVal != null) return retVal;
+        retVal = RfloodSearch(found, x-1, y-1);
+        if (retVal != null) return retVal;
+        retVal = RfloodSearch(found, x+1, y-1);
+        if (retVal != null) return retVal;
+        retVal = RfloodSearch(found, x-1, y+1);
+        if (retVal != null) return retVal;
+        retVal = RfloodSearch(found, x+1, y);
+        if (retVal != null) return retVal;
+        retVal = RfloodSearch(found, x-1, y);
+        if (retVal != null) return retVal;
+        retVal = RfloodSearch(found, x, y+1);
+        if (retVal != null) return retVal;
+        retVal = RfloodSearch(found, x, y-1);
+        if (retVal != null) return retVal;
+
+        return null;
     }
 
     public void printMap() {
