@@ -42,12 +42,15 @@ public class Agent {
 
     int curObj = 0;
     POI curPOI = null;
+    int grabsComplete = 0;
+
+    int time = 0;
 
     public char get_action(char view[][]) {
 
         /**
          * TODO:
-         * - Floodfill algorithm to see if area is fully explored
+         * - Add ability to check if POI is accessible
          * - Pop off grabables and head towards them
          * - Make exploring more dynamic, traverse to unexplored areas until all areas explored
          *   before figuring out what to do next
@@ -90,29 +93,32 @@ public class Agent {
             }
         }
 
+        System.out.println("curobj= " + curObj + " grabs=" + grabs.size() + " POIs=" + pois.size());
+        printPOI();
         //If we have no current objective, pop grabable POIs off list and get them
         if (curObj == 0) {
 
-            if (grabs.size() > 0) {
-
+            if (grabsComplete < grabs.size()) {
+                
                 //Pop off the list
-                curPOI = grabs.remove(0);
+                System.out.println("getting new obj");
+                curPOI = grabs.get(grabsComplete);
+                grabsComplete++;
                 curObj = 1;
             } else {
 
                 //If no existing POIs keep exploring
                 //TODO
-                return 'f';
+                curPOI = map.floodSearch(0,0);
+                curObj = 0;
             }
         }
 
-        /*
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 5; j++) {
-                if (view[i][j] == 'k') return goDestination(view, i, j);
-            }
+        time++;
+        //We move to our current objective
+        if (time < 23) {
+            return travelDest(curPOI.x, curPOI.y);
         }
-        */
         
         map.printMap();
         printPOI();
@@ -175,7 +181,6 @@ public class Agent {
      */
     private void printPOI() {
         
-        System.out.println("current: " + curPOI.type);
         for (POI poi : pois) {
             System.out.println("POI: " + poi.type + " xy: " + poi.x + "," + poi.y);
         }
@@ -185,14 +190,178 @@ public class Agent {
     }
 
     /**
-     * Given a set of goal co-ordinates, finds the quicket way to get there
+     * Given set of zero scoped co-ordinates, travels there,
+     * co-ordinates must be accessible 
+     */
+    private char travelDest(int x, int y) {
+        
+        //First we check if the goal is directly north/south/east/west of our current location
+        if (c_x == x) {
+
+            //This means the destination is directly up or down
+            //Now we check which it is
+            if (c_y < y) {
+                
+                //If it is above us
+                //Now we check our orientation and move appropriately
+                if (orient == '^') {
+                    
+                    c_y++;
+
+                    //Check if destination is right infront, then we
+                    //need to update objectives
+                    if (c_y == y) {
+                        curObj = 0;
+                        //Update item counts
+                        if (curPOI.type == 'a') axe++;
+                        if (curPOI.type == 'o') stones++;
+                        if (curPOI.type == 'k') keys++;
+                        curPOI.interacted = true;
+                        //Reset curPOI;
+                        curPOI = null;
+                    }
+
+                    return 'f';
+                } else if (orient == 'v') {
+
+                    orient = '>';
+                    return 'l';
+                } else if (orient == '>') {
+
+                    orient = '^';
+                    return 'l';
+                } else {
+
+                    orient = '^';
+                    return 'r';
+                }
+            } else {
+
+                //If it is below us
+                //Now we check our orientation and move appropriately
+                if (orient == '^') {
+    
+                    orient = '>';
+                    return 'r';
+                } else if (orient == 'v') {
+
+                    c_y--;
+
+                    //Check if destination is right infront, then we
+                    //need to update objectives
+                    if (c_y == y) {
+                        curObj = 0;
+                        //Update item counts
+                        if (curPOI.type == 'a') axe++;
+                        if (curPOI.type == 'o') stones++;
+                        if (curPOI.type == 'k') keys++;
+                        curPOI.interacted = true;
+                        //Reset curPOI;
+                        curPOI = null;
+                    }
+                    
+                    return 'f';
+                } else if (orient == '>') {
+
+                    orient = 'v';
+                    return 'r';
+                } else {
+
+                    orient = 'v';
+                    return 'l';
+                }
+            }
+        } else if (c_y == y) {
+
+            //This means the destination is directly left or right
+            //Now we check which it is
+            if (c_x < x) {
+                
+                //If it is to our right
+                //Now we check our orientation and move appropriately
+                if (orient == '^') {
+    
+                    orient = '>';
+                    return 'r';
+                } else if (orient == 'v') {
+
+                    orient = '>';
+                    return 'l';
+                } else if (orient == '>') {
+
+                    c_x++;
+
+                    //Check if destination is right infront, then we
+                    //need to update objectives
+                    if (c_x == x) {
+                        curObj = 0;
+                        //Update item counts
+                        if (curPOI.type == 'a') axe++;
+                        if (curPOI.type == 'o') stones++;
+                        if (curPOI.type == 'k') keys++;
+                        curPOI.interacted = true;
+                        //Reset curPOI;
+                        curPOI = null;
+                    }
+                    
+                    return 'f';
+                } else {
+
+                    orient = '^';
+                    return 'r';
+                }
+            } else {
+
+                //If it is to our left
+                //Now we check our orientation and move appropriately
+                if (orient == '^') {
+    
+                    orient = '<';
+                    return 'l';
+                } else if (orient == 'v') {
+
+                    orient = '<';
+                    return 'r';
+                } else if (orient == '>') {
+
+                    orient = 'v';
+                    return 'r';
+                } else {
+
+                    c_x--;
+
+                    //Check if destination is right infront, then we
+                    //need to update objectives
+                    if (c_x == x) {
+                        curObj = 0;
+                        //Update item counts
+                        if (curPOI.type == 'a') axe++;
+                        if (curPOI.type == 'o') stones++;
+                        if (curPOI.type == 'k') keys++;
+                        curPOI.interacted = true;
+                        //Reset curPOI;
+                        curPOI = null;
+                    }
+                    
+                    return 'f';
+                }
+            }
+        } else {
+            //If we aren't directly in line with the destination on an axis
+            //We attempt to move closer to it.
+            return 'f';
+        }
+    }
+
+    /**
+     * Given a set of goal agent view co-ordinates, finds the quicket way to get there
      * Also updates picking up specific items
      */
-    private char goDestination(char view[][], int y, int x) {
+    private char goDestination(char view[][], int x, int y) {
 
         //Depending on where the dest is we orientate or go forward
 
-        //First we check if the key is in front of us
+        //First we check if the destination is in front of us
         if (y < 2) {
 
             //Checks if an item is directly infront and pick its up if so
