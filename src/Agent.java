@@ -79,6 +79,14 @@ public class Agent {
          */
         
         map.addMap(view, orient, c_x, c_y);
+        map.printMap();
+
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                System.out.print(view[i][j]);
+            }
+            System.out.print('\n');
+        }
 
         //Scan the view and add POIs
         for (int i = 0; i < 5; i++) {
@@ -109,21 +117,19 @@ public class Agent {
 
                 //If no existing POIs keep exploring
                 //TODO
-                curPOI = map.floodSearch(0,0);
+                curPOI = map.floodSearch(c_x, c_y);
                 curObj = 0;
             }
         }
 
         time++;
         //We move to our current objective
-        if (time < 23) {
+        if (time < 30) {
             return travelDest(curPOI.x, curPOI.y);
         }
         
         map.printMap();
         printPOI();
-        POI lol = map.floodSearch(0,0);
-        System.out.println(lol.x + "," + lol.y);
         System.exit(0);
         return 'f';
     }
