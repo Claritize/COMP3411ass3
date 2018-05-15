@@ -129,12 +129,12 @@ public class Map {
                 //If traversable then make a state for it
                 //Calculate manhattan distance
                 int cost = current.moves.size() + 1;
-                if (current.x > 0 && x > 0) cost += Math.abs(current.x-x);
-                else if (current.x < 0 && x < 0) cost += Math.abs(current.x-x);
-                else cost += Math.abs(current.x+x);
-                if (current.y+1 > 0 && y > 0) cost += Math.abs(current.y+1-y);
-                else if (current.y+1 < 0 && y < 0) cost += Math.abs(current.y+1-y);
-                else cost += Math.abs(current.y+1+y);
+                if (current.x > 0 && mx > 0) cost += Math.abs(current.x-mx);
+                else if (current.x < 0 && mx < 0) cost += Math.abs(current.x-mx);
+                else cost += Math.abs(Math.abs(current.x)+Math.abs(mx));
+                if (current.y+1 > 0 && my > 0) cost += Math.abs(current.y+1-my);
+                else if (current.y+1 < 0 && my < 0) cost += Math.abs(current.y+1-my);
+                else cost += Math.abs(Math.abs(current.y+1)+Math.abs(my));
                 
                 State newState = new State(current.x, current.y+1, cost);
                 //Add the new path
@@ -142,7 +142,7 @@ public class Map {
                     newState.moves.add(c);
                 }
                 //Add the upper movement
-                newState.moves.add('^');
+                newState.moves.add('v');
                 states.offer(newState);
             }
             //Expand states around current and add to queue
@@ -155,12 +155,12 @@ public class Map {
                 //If traversable then make a state for it
                 //Calculate manhattan distance
                 int cost = current.moves.size() + 1;
-                if (current.x > 0 && x > 0) cost += Math.abs(current.x-x);
-                else if (current.x < 0 && x < 0) cost += Math.abs(current.x-x);
-                else cost += Math.abs(current.x+x);
-                if (current.y-1 > 0 && y > 0) cost += Math.abs(current.y-1-y);
-                else if (current.y-1 < 0 && y < 0) cost += Math.abs(current.y-1-y);
-                else cost += Math.abs(current.y-1+y);
+                if (current.x > 0 && mx > 0) cost += Math.abs(current.x-mx);
+                else if (current.x < 0 && mx < 0) cost += Math.abs(current.x-mx);
+                else cost += Math.abs(Math.abs(current.x)+Math.abs(mx));
+                if (current.y-1 > 0 && my > 0) cost += Math.abs(current.y-1-my);
+                else if (current.y-1 < 0 && my < 0) cost += Math.abs(current.y-1-my);
+                else cost += Math.abs(Math.abs(current.y-1)+Math.abs(my));
                 
                 State newState = new State(current.x, current.y-1, cost);
                 //Add the new path
@@ -168,7 +168,7 @@ public class Map {
                     newState.moves.add(c);
                 }
                 //Add the upper movement
-                newState.moves.add('v');
+                newState.moves.add('^');
                 states.offer(newState);
             }
             //Expand states around current and add to queue
@@ -181,12 +181,12 @@ public class Map {
                 //If traversable then make a state for it
                 //Calculate manhattan distance
                 int cost = current.moves.size() + 1;
-                if (current.x+1 > 0 && x > 0) cost += Math.abs(current.x+1-x);
-                else if (current.x+1 < 0 && x < 0) cost += Math.abs(current.x+1-x);
-                else cost += Math.abs(current.x+1+x);
-                if (current.y > 0 && y > 0) cost += Math.abs(current.y-y);
-                else if (current.y < 0 && y < 0) cost += Math.abs(current.y-y);
-                else cost += Math.abs(current.y+y);
+                if (current.x+1 > 0 && mx > 0) cost += Math.abs(current.x+1-mx);
+                else if (current.x+1 < 0 && mx < 0) cost += Math.abs(current.x+1-mx);
+                else cost += Math.abs(Math.abs(current.x+1)+Math.abs(mx));
+                if (current.y > 0 && my > 0) cost += Math.abs(current.y-my);
+                else if (current.y < 0 && my < 0) cost += Math.abs(current.y-my);
+                else cost += Math.abs(Math.abs(current.y)+Math.abs(my));
                 
                 State newState = new State(current.x+1, current.y, cost);
                 //Add the new path
@@ -207,12 +207,12 @@ public class Map {
                 //If traversable then make a state for it
                 //Calculate manhattan distance
                 int cost = current.moves.size() + 1;
-                if (current.x-1 > 0 && x > 0) cost += Math.abs(current.x-1-x);
-                else if (current.x-1 < 0 && x < 0) cost += Math.abs(current.x-1-x);
-                else cost += Math.abs(current.x-1+x);
-                if (current.y > 0 && y > 0) cost += Math.abs(current.y-y);
-                else if (current.y < 0 && y < 0) cost += Math.abs(current.y-y);
-                else cost += Math.abs(current.y+y);
+                if (current.x-1 > 0 && mx > 0) cost += Math.abs(current.x-1-mx);
+                else if (current.x-1 < 0 && mx < 0) cost += Math.abs(current.x-1-mx);
+                else cost += Math.abs(Math.abs(current.x-1)+Math.abs(mx));
+                if (current.y > 0 && my > 0) cost += Math.abs(current.y-my);
+                else if (current.y < 0 && my < 0) cost += Math.abs(current.y-my);
+                else cost += Math.abs(Math.abs(current.y)+Math.abs(my));
                 
                 State newState = new State(current.x-1, current.y, cost);
                 //Add the new path

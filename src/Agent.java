@@ -79,15 +79,8 @@ public class Agent {
          */
         
         map.addMap(view, orient, c_x, c_y);
-        map.printMap();
+        //map.printMap();
         System.out.println("AgentPOS = " + c_x + "," + c_y);
-
-        for (int i = 0; i < 5; i++) {
-            for (int j = 0; j < 5; j++) {
-                System.out.print(view[i][j]);
-            }
-            System.out.print('\n');
-        }
 
         //Scan the view and add POIs
         for (int i = 0; i < 5; i++) {
@@ -125,7 +118,7 @@ public class Agent {
 
         time++;
         //We move to our current objective
-        if (time < 17) {
+        if (time < 40) {
             char travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y);
             System.out.println("direction: " + travelDir);
             if (orient == travelDir) {
@@ -177,9 +170,9 @@ public class Agent {
             }
         }
         
-        map.printMap();
+        //map.printMap();
         printPOI();
-        System.out.println("lel" + map.AStarTravel(2, -2, 0, 0));
+        System.out.println("uh" + curPOI.x + "," + curPOI.y);
         System.exit(0);
         return 'f';
     }
