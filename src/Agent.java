@@ -118,7 +118,7 @@ public class Agent {
 
         time++;
         //We move to our current objective
-        if (time < 40) {
+        if (time < 50) {
             char travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y);
             System.out.println("direction: " + travelDir);
             if (orient == travelDir) {
@@ -135,21 +135,65 @@ public class Agent {
 
                 //We need to check if we would get an item when moved
                 if (view[1][2] == 'k') {
+
                     keys++;
-                    curPOI = null;
-                    curObj = 0;
+                    //We need to check if the object we are picking up is our POI
+                    if (c_x == curPOI.x && c_y == curPOI.y) {
+                    
+                        curPOI = null;
+                        curObj = 0;
+                    } else {
+                        
+                        //Otherwise we have to find it in our POIs and set interactable to false
+                        for (POI poi : grabs) {
+                            if (c_x == poi.x && c_y == poi.y) {
+                                poi.interacted = true;
+                                break;
+                            }
+                        }
+                    }
                 }
                 if (view[1][2] == 'o') {
+
                     stones++;
-                    curPOI = null;
-                    curObj = 0;
+                    //We need to check if the object we are picking up is our POI
+                    if (c_x == curPOI.x && c_y == curPOI.y) {
+                    
+                        curPOI = null;
+                        curObj = 0;
+                    } else {
+                        
+                        //Otherwise we have to find it in our POIs and set interactable to false
+                        for (POI poi : grabs) {
+                            if (c_x == poi.x && c_y == poi.y) {
+                                poi.interacted = true;
+                                break;
+                            }
+                        }
+                    }
                 }
                 if (view[1][2] == 'a') {
+
                     axe++;
-                    curPOI = null;
-                    curObj = 0;
+                    //We need to check if the object we are picking up is our POI
+                    if (c_x == curPOI.x && c_y == curPOI.y) {
+
+                        curPOI = null;
+                        curObj = 0;
+                    } else {
+                        
+                        //Otherwise we have to find it in our POIs and set interactable to false
+                        for (POI poi : grabs) {
+                            if (c_x == poi.x && c_y == poi.y) {
+                                poi.interacted = true;
+                                break;
+                            }
+                        }
+                    }
                 }
+
                 return 'f';
+
             } else if (travelDir == '^') {
                 if (orient == '>') {
                     orient = '^';
@@ -197,7 +241,7 @@ public class Agent {
             }
         }
         
-        //map.printMap();
+        map.printMap();
         printPOI();
         System.out.println("uh" + curPOI.x + "," + curPOI.y);
         System.exit(0);
