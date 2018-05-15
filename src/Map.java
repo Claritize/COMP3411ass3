@@ -83,6 +83,7 @@ public class Map {
         int mc_x = 80 + c_x;
         int mc_y = 80 - c_y;
 
+        System.out.println("from " + mc_x + " , " + mc_y + " to " + mx + " , " + my);
         //Copy map used to mark searched 
         char [][] mapCopy = new char[map.length][];
         for(int i = 0; i < map.length; i++)
@@ -100,7 +101,6 @@ public class Map {
 
         //Looping through priority queue
         while (states.size() > 0) {
-
             /*
             for (int i = 65; i < 95; i++) {
                 for (int j = 65; j < 95; j++) {
@@ -112,6 +112,7 @@ public class Map {
 
             //Pop off from the queue
             current = states.poll();
+            //System.out.println("wew " + current.x + " , " + current.y + " to " + mx + " , " + my);
 
             //Set current tile as explored
             mapCopy[current.y][current.x] = '&';

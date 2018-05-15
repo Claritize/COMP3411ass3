@@ -122,6 +122,33 @@ public class Agent {
             char travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y);
             System.out.println("direction: " + travelDir);
             if (orient == travelDir) {
+
+                if (orient == '^') {
+                    c_y++;
+                } else if (orient == 'v') {
+                    c_y--;
+                } else if (orient == '>') {
+                    c_x++;
+                } else {
+                    c_x--;
+                }
+
+                //We need to check if we would get an item when moved
+                if (view[1][2] == 'k') {
+                    keys++;
+                    curPOI = null;
+                    curObj = 0;
+                }
+                if (view[1][2] == 'o') {
+                    stones++;
+                    curPOI = null;
+                    curObj = 0;
+                }
+                if (view[1][2] == 'a') {
+                    axe++;
+                    curPOI = null;
+                    curObj = 0;
+                }
                 return 'f';
             } else if (travelDir == '^') {
                 if (orient == '>') {
