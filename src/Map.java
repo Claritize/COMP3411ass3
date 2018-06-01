@@ -226,7 +226,13 @@ public class Map {
             }
         }
 
-        if (current != null) return current.moves.get(0);
+        //System.out.println(current);
+        //System.out.println(current.moves);
+        if (current != null){
+            if(current.moves.size() > 0){
+                return current.moves.get(0);
+            }
+        } 
         return 'f';
     }
 
