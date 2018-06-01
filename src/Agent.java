@@ -49,7 +49,7 @@ public class Agent {
     public char get_action(char view[][]) {
 
         /**
-         * TODO:
+         * TO DO:
          * - Add ability to check if POI is accessible
          * - Pop off grabables and head towards them
          * - Make exploring more dynamic, traverse to unexplored areas until all areas explored
@@ -80,7 +80,7 @@ public class Agent {
         
         map.addMap(view, orient, c_x, c_y);
         System.out.println("current_orient = " + orient);
-        map.printMap();
+        //map.printMap();
         //map.printMap();
         System.out.println("AgentPOS = " + c_x + "," + c_y);
 
@@ -122,7 +122,7 @@ public class Agent {
             } else {
 
                 //If no existing POIs keep exploring
-                //TODO
+                //TO DO
                 curPOI = map.floodSearch(c_x, c_y);
                 System.out.println("current flood search = " + c_x + " ," + c_y);
                 curObj = 0;
@@ -132,6 +132,8 @@ public class Agent {
         time++;
         //We move to our current objective
         if (time < 20) {
+            if (curPOI == null) System.out.println("CURPOI IS NULL");
+            System.out.println("X" + curPOI.x + "Y" + curPOI.y);
             char travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y);
             System.out.println("direction: " + travelDir);
             map.printMap();
@@ -208,13 +210,13 @@ public class Agent {
                         }
                     }
                 }
-                else {
-                    if (c_x == curPOI.x && c_y == curPOI.y) {
-                        curPOI = null;
-                        curObj = 0;
-                    }
+                // else {
+                //     if (c_x == curPOI.x && c_y == curPOI.y) {
+                //         curPOI = null;
+                //         curObj = 0;
+                //     }
                         
-                }
+                // }
 
                 return 'f';
 
@@ -332,6 +334,8 @@ public class Agent {
             System.out.println("grab: " + poi.type + " xy: " + poi.x + "," + poi.y + "," + poi.interacted);
         }
     }
+
+
 
     /**
      * Given set of zero scoped co-ordinates, travels there,

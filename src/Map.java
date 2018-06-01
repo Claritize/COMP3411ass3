@@ -112,7 +112,7 @@ public class Map {
 
             //Pop off from the queue
             current = states.poll();
-            System.out.println("wew " + current.x + " , " + current.y + " to " + mx + " , " + my);
+            System.out.print("wew " + current.x + " , " + current.y + " to " + mx + " , " + my);
 
             //Set current tile as explored
             mapCopy[current.y][current.x] = '&';
@@ -233,6 +233,7 @@ public class Map {
                 return current.moves.get(0);
             }
         }
+        //if(current == null) System.out.println("CURRENT IS NULL");
         return 'f';
     }
 

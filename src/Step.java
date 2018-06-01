@@ -47,7 +47,7 @@ public class Step {
 
     BufferedReader in;
     boolean agent_here;
-    char ch;
+    //char ch;
     int r,c;
 
     map = new char[1024][];
@@ -240,7 +240,7 @@ public class Step {
   }
 
   private void get_view() {
-    char ch;
+    //char ch;
     int i,j,r=0,c=0;
 
     for( i = -2; i <= 2; i++ ) {
