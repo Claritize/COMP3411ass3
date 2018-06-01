@@ -121,7 +121,8 @@ public class Agent {
         if (time < 50) {
             char travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y);
             System.out.println("direction: " + travelDir);
-            if (orient == travelDir) {
+            map.printMap();
+            if (orient == travelDir || travelDir == 'f') {
 
                 if (orient == '^') {
                     c_y++;
@@ -153,7 +154,7 @@ public class Agent {
                         }
                     }
                 }
-                if (view[1][2] == 'o') {
+                else if (view[1][2] == 'o') {
 
                     stones++;
                     //We need to check if the object we are picking up is our POI
@@ -172,7 +173,7 @@ public class Agent {
                         }
                     }
                 }
-                if (view[1][2] == 'a') {
+                else if (view[1][2] == 'a') {
 
                     axe++;
                     //We need to check if the object we are picking up is our POI
@@ -190,6 +191,13 @@ public class Agent {
                             }
                         }
                     }
+                }
+                else {
+                    if (c_x == curPOI.x && c_y == curPOI.y) {
+                        curPOI = null;
+                        curObj = 0;
+                    }
+                        
                 }
 
                 return 'f';
@@ -243,7 +251,7 @@ public class Agent {
         
         map.printMap();
         printPOI();
-        System.out.println("uh" + curPOI.x + "," + curPOI.y);
+        System.out.println("ehhhhhh" + curPOI.x + "," + curPOI.y);
         System.exit(0);
         return 'f';
     }
@@ -313,7 +321,7 @@ public class Agent {
      * Given set of zero scoped co-ordinates, travels there,
      * co-ordinates must be accessible 
      */
-    private char travelDest(int x, int y) {
+    /*private char travelDest(int x, int y) {
         
         //First we check if the goal is directly north/south/east/west of our current location
         if (c_x == x) {
@@ -479,8 +487,8 @@ public class Agent {
         }
     }
 
-    /**
-     * Given a set of goal agent view co-ordinates, finds the quicket way to get there
+    
+     * Given a set of goal agent view co-ordinates, finds the quickest way to get there
      * Also updates picking up specific items
      */
     private char goDestination(char view[][], int x, int y) {
@@ -632,7 +640,7 @@ public class Agent {
             System.exit(-1);
         }
 
-        try { // scan 5-by-5 wintow around current location
+        try { // scan 5-by-5 window around current location
             while (true) {
                 for (i = 0; i < 5; i++) {
                     for (j = 0; j < 5; j++) {
@@ -645,7 +653,7 @@ public class Agent {
                         }
                     }
                 }
-                agent.print_view(view); // COMMENT THIS OUT BEFORE SUBMISSION
+                //agent.print_view(view); // COMMENT THIS OUT BEFORE SUBMISSION
                 action = agent.get_action(view);
                 out.write(action);
             }
