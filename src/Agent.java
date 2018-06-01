@@ -102,6 +102,7 @@ public class Agent {
             System.out.println("getting " + curPOI.type + " xy: " + curPOI.x + "," + curPOI.y + "," + curPOI.interacted);
         }
         printPOI();
+        System.out.println("grabs gotten = " + grabsComplete);
         //If we have no current objective, pop grabable POIs off list and get them
         if (curObj == 0) {
 
@@ -117,12 +118,13 @@ public class Agent {
                         break;
                     }
                 }
-                grabsComplete++;
                 curObj = 1;
             } else {
 
                 //If no existing POIs keep exploring
                 //TODO
+                System.out.println("starting exploration");
+
                 curPOI = map.floodSearch(c_x, c_y);
                 System.out.println("current flood search = " + c_x + " ," + c_y);
                 curObj = 0;
@@ -131,7 +133,7 @@ public class Agent {
 
         time++;
         //We move to our current objective
-        if (time < 20) {
+        if (time < 50) {
             char travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y);
             System.out.println("direction: " + travelDir);
             if (orient == travelDir) {
@@ -154,6 +156,7 @@ public class Agent {
                     if (c_x == curPOI.x && c_y == curPOI.y) {
                     
                         curPOI.interacted = true;
+                        grabsComplete++;
                         curPOI = null;
                         curObj = 0;
                     } else {
@@ -162,6 +165,7 @@ public class Agent {
                         for (POI poi : grabs) {
                             if (c_x == poi.x && c_y == poi.y) {
                                 poi.interacted = true;
+                                grabsComplete++;
                                 break;
                             }
                         }
@@ -174,6 +178,7 @@ public class Agent {
                     if (c_x == curPOI.x && c_y == curPOI.y) {
                                         
                         curPOI.interacted = true;
+                        grabsComplete++;
                         curPOI = null;
                         curObj = 0;
                     } else {
@@ -182,6 +187,7 @@ public class Agent {
                         for (POI poi : grabs) {
                             if (c_x == poi.x && c_y == poi.y) {
                                 poi.interacted = true;
+                                grabsComplete++;
                                 break;
                             }
                         }
@@ -194,6 +200,7 @@ public class Agent {
                     if (c_x == curPOI.x && c_y == curPOI.y) {
                     
                         curPOI.interacted = true;
+                        grabsComplete++;
                         curPOI = null;
                         curObj = 0;
                     } else {
@@ -202,6 +209,7 @@ public class Agent {
                         for (POI poi : grabs) {
                             if (c_x == poi.x && c_y == poi.y) {
                                 poi.interacted = true;
+                                grabsComplete++;
                                 break;
                             }
                         }
