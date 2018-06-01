@@ -9,10 +9,11 @@ public class Map {
 
     //Made to be 160x160 big so if agent starts on any corner, still large enough to fit entire map
     //Agent starts at grid [80,80] by default
-    private char map[][];
+    public char map[][];
 
     //Used for floodfill algorithm
     private boolean found;
+    private boolean water;
 
     public Map() {
 
@@ -90,8 +91,9 @@ public class Map {
      * Uses A* to find traversability and returns how many blocks of water
      * are needed to be trverssed to get to the destination
      * Returns -1 if no path traverssable
+     * Have to give a boolean as to wether this is checking for an item or not
      */
-    public int checkTraversable(int x, int y, int c_x, int c_y) {
+    public int checkTraversable(int x, int y, int c_x, int c_y, boolean item) {
                 
         //Convert co-ordinates to map's scope
         int mx = 80 + x;
@@ -143,7 +145,8 @@ public class Map {
             if (mapCopy[current.y+1][current.x] != '&' &&
                 mapCopy[current.y+1][current.x] != '*' &&
                 mapCopy[current.y+1][current.x] != 'T' &&
-                mapCopy[current.y][current.x-1] != '-') {
+                mapCopy[current.y+1][current.x] != '-' &&
+                (mapCopy[current.y+1][current.x] != '=' || !item)) {
 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -168,7 +171,8 @@ public class Map {
             if (mapCopy[current.y-1][current.x] != '&' &&
                 mapCopy[current.y-1][current.x] != '*' &&
                 mapCopy[current.y-1][current.x] != 'T' &&
-                mapCopy[current.y][current.x-1] != '-') {
+                mapCopy[current.y-1][current.x] != '-' &&
+                (mapCopy[current.y-1][current.x] != '=' || !item)) {
 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -193,7 +197,8 @@ public class Map {
             if (mapCopy[current.y][current.x+1] != '&' &&
                 mapCopy[current.y][current.x+1] != '*' &&
                 mapCopy[current.y][current.x+1] != 'T' &&
-                mapCopy[current.y][current.x-1] != '-') {
+                mapCopy[current.y][current.x+1] != '-' &&
+                (mapCopy[current.y][current.x+1] != '=' || !item)) {
 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -218,7 +223,8 @@ public class Map {
             if (mapCopy[current.y][current.x-1] != '&' &&
                 mapCopy[current.y][current.x-1] != '*' &&
                 mapCopy[current.y][current.x-1] != 'T' &&
-                mapCopy[current.y][current.x-1] != '-') {
+                mapCopy[current.y][current.x-1] != '-' &&
+                (mapCopy[current.y][current.x-1] != '=' || !item)) {
                 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -310,7 +316,8 @@ public class Map {
             //Expand states around current and add to queue
             if (mapCopy[current.y+1][current.x] != '&' &&
                 mapCopy[current.y+1][current.x] != '*' &&
-                mapCopy[current.y+1][current.x] != 'T') {
+                mapCopy[current.y+1][current.x] != 'T' &&
+                mapCopy[current.y+1][current.x] != '=') {
 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -334,7 +341,8 @@ public class Map {
             //Expand states around current and add to queue
             if (mapCopy[current.y-1][current.x] != '&' &&
                 mapCopy[current.y-1][current.x] != '*' &&
-                mapCopy[current.y-1][current.x] != 'T') {
+                mapCopy[current.y-1][current.x] != 'T' &&
+                mapCopy[current.y-1][current.x] != '=') {
 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -358,7 +366,8 @@ public class Map {
             //Expand states around current and add to queue
             if (mapCopy[current.y][current.x+1] != '&' &&
                 mapCopy[current.y][current.x+1] != '*' &&
-                mapCopy[current.y][current.x+1] != 'T') {
+                mapCopy[current.y][current.x+1] != 'T' &&
+                mapCopy[current.y][current.x+1] != '=') {
 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -382,7 +391,8 @@ public class Map {
             //Expand states around current and add to queue
             if (mapCopy[current.y][current.x-1] != '&' &&
                 mapCopy[current.y][current.x-1] != '*' &&
-                mapCopy[current.y][current.x-1] != 'T') {
+                mapCopy[current.y][current.x-1] != 'T' &&
+                mapCopy[current.y][current.x-1] != '=') {
                 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -474,7 +484,8 @@ public class Map {
             //Expand states around current and add to queue
             if (mapCopy[current.y+1][current.x] != '&' &&
                 mapCopy[current.y+1][current.x] != '*' &&
-                mapCopy[current.y][current.x-1] != '-') {
+                mapCopy[current.y+1][current.x] != '-' &&
+                mapCopy[current.y+1][current.x] != '=') {
 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -498,7 +509,8 @@ public class Map {
             //Expand states around current and add to queue
             if (mapCopy[current.y-1][current.x] != '&' &&
                 mapCopy[current.y-1][current.x] != '*' &&
-                mapCopy[current.y][current.x-1] != '-') {
+                mapCopy[current.y-1][current.x] != '-' &&
+                mapCopy[current.y-1][current.x] != '=') {
 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -522,7 +534,8 @@ public class Map {
             //Expand states around current and add to queue
             if (mapCopy[current.y][current.x+1] != '&' &&
                 mapCopy[current.y][current.x+1] != '*' &&
-                mapCopy[current.y][current.x-1] != '-') {
+                mapCopy[current.y][current.x+1] != '-' &&
+                mapCopy[current.y][current.x+1] != '=') {
 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -546,7 +559,8 @@ public class Map {
             //Expand states around current and add to queue
             if (mapCopy[current.y][current.x-1] != '&' &&
                 mapCopy[current.y][current.x-1] != '*' &&
-                mapCopy[current.y][current.x-1] != '-') {
+                mapCopy[current.y][current.x-1] != '-' &&
+                mapCopy[current.y][current.x-1] != '=') {
                 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -633,7 +647,7 @@ public class Map {
             //Expand states around current and add to queue
             if (mapCopy[current.y+1][current.x] != '&' &&
                 mapCopy[current.y+1][current.x] != '*' &&
-                mapCopy[current.y+1][current.x] != '~' &&
+                (mapCopy[current.y+1][current.x] != '~' || type == '~') &&
                 (mapCopy[current.y+1][current.x] != 'T' || type == 'T') &&
                 (mapCopy[current.y+1][current.x] != '-' || type == '-')) {
 
@@ -659,7 +673,7 @@ public class Map {
             //Expand states around current and add to queue
             if (mapCopy[current.y-1][current.x] != '&' &&
                 mapCopy[current.y-1][current.x] != '*' &&
-                mapCopy[current.y-1][current.x] != '~' &&
+                (mapCopy[current.y-1][current.x] != '~' || type == '~') &&
                 (mapCopy[current.y-1][current.x] != 'T' || type == 'T') &&
                 (mapCopy[current.y-1][current.x] != '-' || type == '-')) {
 
@@ -685,7 +699,7 @@ public class Map {
             //Expand states around current and add to queue
             if (mapCopy[current.y][current.x+1] != '&' &&
                 mapCopy[current.y][current.x+1] != '*' &&
-                mapCopy[current.y][current.x+1] != '~' &&
+                (mapCopy[current.y][current.x+1] != '~' || type == '~') &&
                 (mapCopy[current.y][current.x+1] != 'T' || type == 'T') &&
                 (mapCopy[current.y][current.x+1] != '-' || type == '-')) {
 
@@ -711,7 +725,7 @@ public class Map {
             //Expand states around current and add to queue
             if (mapCopy[current.y][current.x-1] != '&' &&
                 mapCopy[current.y][current.x-1] != '*' &&
-                mapCopy[current.y][current.x-1] != '~' &&
+                (mapCopy[current.y][current.x-1] != '~' || type == '~') &&
                 (mapCopy[current.y][current.x-1] != 'T' || type == 'T') &&
                 (mapCopy[current.y][current.x-1] != '-' || type == '-')) {
 
@@ -752,12 +766,15 @@ public class Map {
     /**
      * Flood searches for unexplored areas
      * Takes a 0,0 origin scoped co-ordinate
+     * Also needs a boolean value as to whether we are crossing water or not
      */
-    public POI floodSearch(int x, int y) {
+    public POI floodSearch(int x, int y, boolean water) {
 
         //Convert co-ordinates to map's scope
         int c_x = 80 + x;
         int c_y = 80 - y;
+
+        this.water = water;
 
         char [][] mapCopy = new char[map.length][];
         for(int i = 0; i < map.length; i++)
@@ -792,7 +809,7 @@ public class Map {
         if (mapCopy[y][x] == '*' ||
             mapCopy[y][x] == 'T' ||
             mapCopy[y][x] == '-' ||
-            mapCopy[y][x] == '~' ||
+            (mapCopy[y][x] == '~' && !water) ||
             mapCopy[y][x] == '&') return null;
         if (map[y][x] == '=') {
             found = true;

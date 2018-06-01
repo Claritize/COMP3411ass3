@@ -12,10 +12,15 @@ import java.net.*;
 
 public class Agent {
 
-    private int rafts = 0;
+    private boolean raft = false;
     private int stones = 0;
     private int axe = 0;
     private int keys = 0;
+
+    //Agent states
+    private boolean on_water = false;
+    private boolean on_raft = false;
+    private boolean on_rock = false;
 
     private int c_y = 0;
     private int c_x = 0;
@@ -32,11 +37,12 @@ public class Agent {
 
     /**
      * Current objective
-     * curObj = 0: explore
+     * curObj  = 0: explore
      *         = 1: grab
      *         = 2: unlock
      *         = 3: chop
      *         = 4: destination
+     *         = 5: sea explore
      * curPOI = co-ords to POI
      */
 
@@ -50,10 +56,9 @@ public class Agent {
 
         /**
          * TODO:
-         * - Add ability to check if POI is accessible
-         * - Pop off grabables and head towards them
-         * - Make exploring more dynamic, traverse to unexplored areas until all areas explored
-         *   before figuring out what to do next
+         * - Update agent's state (on water/raft/rock) as it traverses
+         * - Optimize sea-exploration as it is costly (not much code)
+         *      - If we could find a destination across the sea we go for that direct (lots of code)
          */
 
         /**
@@ -83,7 +88,7 @@ public class Agent {
         map.printMap();
         //map.printMap();
         System.out.println("AgentPOS = " + c_x + "," + c_y);
-        System.out.println("axes = " + axe + " keys = " + keys + " rafts = " + rafts + " stones = " + stones);
+        System.out.println("axes = " + axe + " keys = " + keys + " raft = " + raft + " stones = " + stones);
 
         //Scan the view and add POIs
         for (int i = 0; i < 5; i++) {
@@ -118,7 +123,7 @@ public class Agent {
                     if (!p.interacted) {
 
                         //If not then we check if we can traverse there
-                        int waters = map.checkTraversable(p.x, p.y, c_x, c_y);
+                        int waters = map.checkTraversable(p.x, p.y, c_x, c_y, true);
                         
                         //If we find a path
                         if (waters != -1) {
@@ -133,8 +138,24 @@ public class Agent {
             //If we couldn't find a grabable
             if (curObj == 0) {
 
-                curPOI = map.floodSearch(c_x, c_y);
-                
+                //Check if our current POI has been explored
+                if (curPOI != null) {
+    
+                    //If the current POI still hasn't been explored yet keep on the same path
+                    if (map.map[80-curPOI.y][curPOI.x+80] != '=') {
+                        curPOI = map.floodSearch(c_x, c_y, false);
+                        curObj = 0;
+                    }
+                } else {
+
+                    //Otherwisew try find a new land traversal
+                    curPOI = map.floodSearch(c_x, c_y, false);
+                    curObj = 0;
+                }                
+
+                //Check if it's actually traversable
+                if (curPOI != null) if (map.checkTraversable(curPOI.x, curPOI.y, c_x, c_y, false) == -1) curPOI = null;
+
                 //If curPOI is returned as NULL, that means we have explored everything
                 //We analyse our items and decide what to do
                 if (curPOI == null) {
@@ -152,6 +173,7 @@ public class Agent {
                                 
                                 //If not then we check if we can traverse there
                                 int waters = map.checkTraversableD(p.x, p.y, c_x, c_y);
+                                System.out.println(waters);
                                 
                                 //If we find a path
                                 if (waters != -1) {
@@ -188,12 +210,27 @@ public class Agent {
                                 }
                             }
                         }
+                    } 
+                    
+                    if (curObj == 0) {
+
+                        //If we get here it means we have explored all possible land and got every item we can get to :')
+                        //Oh my god rankini it is 5am and it's almost donnneneeeeeeeeeeeeeeeeee hentaihavennnn
+
+                        //Now we look towards exploring the sea
+                        //This feels like unlocking a new area in an RPG holy crap it feels good
+                        curPOI = map.floodSearch(c_x, c_y, true);
+
+                        //If we find a body of water to cross
+                        if (curPOI != null) {
+                            curPOI.type = '~';
+                            curObj = 5;
+                        }
                     }
 
                 } else {
 
-                    //Otherwise we keep exploring
-                    curObj = 0;
+
                 }
             }
         }
@@ -232,7 +269,7 @@ public class Agent {
                 curPOI.interacted = true;
                 curPOI = null;
                 curObj = 0;
-                rafts++;
+                raft = true;
 
                 //Unlock the door
                 return 'c';
@@ -252,6 +289,16 @@ public class Agent {
                     c_x++;
                 } else {
                     c_x--;
+                }
+
+                //If we are about to cross a body of water we need to remove a stone if we use a stone
+                if (view[1][2] == '~') {
+
+                    if (stones > 0) stones--;
+                    else {
+                        //Otherwise we need to use a raft
+                        raft = false;
+                    }
                 }
 
                 //We need to check if we would get an item when moved
