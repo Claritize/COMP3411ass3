@@ -131,7 +131,7 @@ public class Agent {
 
         time++;
         //We move to our current objective
-        if (time < 25) {
+        if (time < 20) {
             char travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y);
             System.out.println("direction: " + travelDir);
             if (orient == travelDir) {
@@ -153,6 +153,7 @@ public class Agent {
                     //We need to check if the object we are picking up is our POI
                     if (c_x == curPOI.x && c_y == curPOI.y) {
                     
+                        curPOI.interacted = true;
                         curPOI = null;
                         curObj = 0;
                     } else {
@@ -171,7 +172,8 @@ public class Agent {
                     stones++;
                     //We need to check if the object we are picking up is our POI
                     if (c_x == curPOI.x && c_y == curPOI.y) {
-                    
+                                        
+                        curPOI.interacted = true;
                         curPOI = null;
                         curObj = 0;
                     } else {
@@ -190,7 +192,8 @@ public class Agent {
                     axe++;
                     //We need to check if the object we are picking up is our POI
                     if (c_x == curPOI.x && c_y == curPOI.y) {
-
+                    
+                        curPOI.interacted = true;
                         curPOI = null;
                         curObj = 0;
                     } else {
