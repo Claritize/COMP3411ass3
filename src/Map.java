@@ -232,7 +232,7 @@ public class Map {
             if(current.moves.size() > 0){
                 return current.moves.get(0);
             }
-        } 
+        }
         return 'f';
     }
 
