@@ -109,13 +109,12 @@ public class Map {
                 System.out.print('\n');
             }
             */
-
             //Pop off from the queue
             current = states.poll();
             //System.out.println("wew " + current.x + " , " + current.y + " to " + mx + " , " + my);
 
             //Set current tile as explored
-            mapCopy[current.y][current.x] = '&';
+            mapCopy[current.y][current.x] = '&';//why is [y][x]?
 
             //Check if we are at the goal state
             if (current.x == mx && current.y == my) break;
@@ -131,7 +130,7 @@ public class Map {
                 //Calculate manhattan distance
                 int cost = current.moves.size() + 1;
 
-                cost += Math.abs(current.x - mx) + Math.abs(current.y - mx);
+                cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
                 // if (current.x > 0 && mx > 0) cost += Math.abs(current.x-mx);
                 // else if (current.x < 0 && mx < 0) cost += Math.abs(current.x-mx);
                 // else cost += Math.abs(Math.abs(current.x)+Math.abs(mx));
@@ -158,7 +157,7 @@ public class Map {
                 //If traversable then make a state for it
                 //Calculate manhattan distance
                 int cost = current.moves.size() + 1;
-                cost += Math.abs(current.x - mx) + Math.abs(current.y - mx);
+                cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
                 // if (current.x > 0 && mx > 0) cost += Math.abs(current.x-mx);
                 // else if (current.x < 0 && mx < 0) cost += Math.abs(current.x-mx);
                 // else cost += Math.abs(Math.abs(current.x)+Math.abs(mx));
@@ -185,7 +184,7 @@ public class Map {
                 //If traversable then make a state for it
                 //Calculate manhattan distance
                 int cost = current.moves.size() + 1;
-                cost += Math.abs(current.x - mx) + Math.abs(current.y - mx);
+                cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
                 // if (current.x+1 > 0 && mx > 0) cost += Math.abs(current.x+1-mx);
                 // else if (current.x+1 < 0 && mx < 0) cost += Math.abs(current.x+1-mx);
                 // else cost += Math.abs(Math.abs(current.x+1)+Math.abs(mx));
@@ -212,7 +211,7 @@ public class Map {
                 //If traversable then make a state for it
                 //Calculate manhattan distance
                 int cost = current.moves.size() + 1;
-                cost += Math.abs(current.x - mx) + Math.abs(current.y - mx);
+                cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
                 // if (current.x-1 > 0 && mx > 0) cost += Math.abs(current.x-1-mx);
                 // else if (current.x-1 < 0 && mx < 0) cost += Math.abs(current.x-1-mx);
                 // else cost += Math.abs(Math.abs(current.x-1)+Math.abs(mx));

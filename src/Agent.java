@@ -82,6 +82,7 @@ public class Agent {
         System.out.println("current_orient = " + orient);
         //map.printMap();
         //map.printMap();
+        
         System.out.println("AgentPOS = " + c_x + "," + c_y);
 
         //Scan the view and add POIs
