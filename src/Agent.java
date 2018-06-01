@@ -126,6 +126,10 @@ public class Agent {
                 System.out.println("starting exploration");
 
                 curPOI = map.floodSearch(c_x, c_y);
+                
+                //If curPOI is returned as NULL, that means we have explored everything
+                if (curPOI == null) time = 50;
+
                 System.out.println("current flood search = " + c_x + " ," + c_y);
                 curObj = 0;
             }
