@@ -253,15 +253,18 @@ public class Map {
         found = false;
         POI retVal = RfloodSearch(mapCopy, c_x, c_y);
 
+        
         for (int i = 50; i < 110; i++) {
             for (int j = 50; j < 110; j++) {
                 System.out.print(mapCopy[i][j]);
             }
             System.out.print('\n');
         }
+        
 
         if (retVal == null) return null;
-        System.out.println("flood search co-ords = " + retVal.x + "," + retVal.y);
+
+        //Convverting back to general co-ordinates
         retVal.x = 80 - retVal.x;
         retVal.y = retVal.y - 80;
         
