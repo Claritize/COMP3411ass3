@@ -79,6 +79,8 @@ public class Agent {
          */
         
         map.addMap(view, orient, c_x, c_y);
+        System.out.println("current_orient = " + orient);
+        map.printMap();
         //map.printMap();
         System.out.println("AgentPOS = " + c_x + "," + c_y);
 
@@ -96,6 +98,9 @@ public class Agent {
         }
 
         System.out.println("curobj= " + curObj + " grabs=" + grabs.size() + " POIs=" + pois.size());
+        if (curObj == 1) {
+            System.out.println("getting " + curPOI.type + " xy: " + curPOI.x + "," + curPOI.y + "," + curPOI.interacted);
+        }
         printPOI();
         //If we have no current objective, pop grabable POIs off list and get them
         if (curObj == 0) {
@@ -104,7 +109,14 @@ public class Agent {
                 
                 //Pop off the list
                 System.out.println("getting new obj");
-                curPOI = grabs.get(grabsComplete);
+                
+                //Look for another POI to get
+                for (POI p : grabs) {
+                    if (!p.interacted) {
+                        curPOI = p;
+                        break;
+                    }
+                }
                 grabsComplete++;
                 curObj = 1;
             } else {
@@ -112,13 +124,14 @@ public class Agent {
                 //If no existing POIs keep exploring
                 //TODO
                 curPOI = map.floodSearch(c_x, c_y);
+                System.out.println("current flood search = " + c_x + " ," + c_y);
                 curObj = 0;
             }
         }
 
         time++;
         //We move to our current objective
-        if (time < 50) {
+        if (time < 25) {
             char travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y);
             System.out.println("direction: " + travelDir);
             if (orient == travelDir) {
@@ -302,10 +315,10 @@ public class Agent {
     private void printPOI() {
         
         for (POI poi : pois) {
-            System.out.println("POI: " + poi.type + " xy: " + poi.x + "," + poi.y);
+            System.out.println("POI: " + poi.type + " xy: " + poi.x + "," + poi.y + "," + poi.interacted);
         }
         for (POI poi : grabs) {
-            System.out.println("grab: " + poi.type + " xy: " + poi.x + "," + poi.y);
+            System.out.println("grab: " + poi.type + " xy: " + poi.x + "," + poi.y + "," + poi.interacted);
         }
     }
 
