@@ -112,7 +112,7 @@ public class Map {
 
             //Pop off from the queue
             current = states.poll();
-            System.out.print("wew " + current.x + " , " + current.y + " to " + mx + " , " + my);
+            //System.out.println("wew " + current.x + " , " + current.y + " to " + mx + " , " + my);
 
             //Set current tile as explored
             mapCopy[current.y][current.x] = '&';
@@ -253,18 +253,18 @@ public class Map {
 
         found = false;
         POI retVal = RfloodSearch(mapCopy, c_x, c_y);
-/*
+
         for (int i = 50; i < 110; i++) {
             for (int j = 50; j < 110; j++) {
                 System.out.print(mapCopy[i][j]);
             }
             System.out.print('\n');
         }
-*/
+
         if (retVal == null) return null;
-        
-        retVal.x = retVal.x - 80;
-        retVal.y = 80 - retVal.y;
+        System.out.println("flood search co-ords = " + retVal.x + "," + retVal.y);
+        retVal.x = 80 - retVal.x;
+        retVal.y = retVal.y - 80;
         
         return retVal;
     }
