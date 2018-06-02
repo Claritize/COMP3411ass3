@@ -967,7 +967,6 @@ public class Map {
                 }
                 System.out.print('\n');
             }
-            
 
             //Pop off from the queue
             current = states.poll();

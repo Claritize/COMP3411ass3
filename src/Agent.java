@@ -164,7 +164,7 @@ public class Agent {
                             if (waters == 0) {
                                 curPOI = p;
                                 curObj = 1;
-                                System.out.println("asdasdsads");
+                                System.out.println("lol");
                                 break;
                             }
                         }
