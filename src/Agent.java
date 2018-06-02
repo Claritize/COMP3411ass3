@@ -12,10 +12,15 @@ import java.net.*;
 
 public class Agent {
 
-    private int rafts = 0;
+    private boolean raft = false;
     private int stones = 0;
     private int axe = 0;
     private int keys = 0;
+
+    //Agent states
+    private boolean on_water = false;
+    private boolean on_raft = false;
+    private boolean on_rock = false;
 
     private int c_y = 0;
     private int c_x = 0;
@@ -32,11 +37,12 @@ public class Agent {
 
     /**
      * Current objective
-     * curObj = 0: explore
+     * curObj  = 0: explore
      *         = 1: grab
      *         = 2: unlock
      *         = 3: chop
      *         = 4: destination
+     *         = 5: sea explore
      * curPOI = co-ords to POI
      */
 
@@ -49,11 +55,18 @@ public class Agent {
     public char get_action(char view[][]) {
 
         /**
+<<<<<<< HEAD
          * TO DO:
          * - Add ability to check if POI is accessible
          * - Pop off grabables and head towards them
          * - Make exploring more dynamic, traverse to unexplored areas until all areas explored
          *   before figuring out what to do next
+=======
+         * TODO:
+         * - Update agent's state (on water/raft/rock) as it traverses
+         * - Optimize sea-exploration as it is costly (not much code)
+         *      - If we could find a destination across the sea we go for that direct (lots of code)
+>>>>>>> 2d75e595dd6c9a0ee95a87cd98026281f3367dfa
          */
 
         /**
@@ -84,6 +97,7 @@ public class Agent {
         //map.printMap();
         
         System.out.println("AgentPOS = " + c_x + "," + c_y);
+        System.out.println("axes = " + axe + " keys = " + keys + " raft = " + raft + " stones = " + stones);
 
         //Scan the view and add POIs
         for (int i = 0; i < 5; i++) {
@@ -114,32 +128,165 @@ public class Agent {
                 
                 //Look for another POI to get
                 for (POI p : grabs) {
+
                     if (!p.interacted) {
-                        curPOI = p;
-                        break;
+
+                        //If not then we check if we can traverse there
+                        int waters = map.checkTraversable(p.x, p.y, c_x, c_y, true);
+                        
+                        //If we find a path
+                        if (waters != -1) {
+                            curPOI = p;
+                            curObj = 1;
+                            break;
+                        }
                     }
                 }
-                curObj = 1;
-            } else {
+            } 
+            
+            //If we couldn't find a grabable
+            if (curObj == 0) {
 
-                //If no existing POIs keep exploring
-                //TODO
-                System.out.println("starting exploration");
+                //Check if our current POI has been explored
+                if (curPOI != null) {
+    
+                    //If the current POI still hasn't been explored yet keep on the same path
+                    if (map.map[80-curPOI.y][curPOI.x+80] != '=') {
+                        curPOI = map.floodSearch(c_x, c_y, false);
+                        curObj = 0;
+                    }
+                } else {
 
-                curPOI = map.floodSearch(c_x, c_y);
-                
+                    //Otherwisew try find a new land traversal
+                    curPOI = map.floodSearch(c_x, c_y, false);
+                    curObj = 0;
+                }                
+
+                //Check if it's actually traversable
+                if (curPOI != null) if (map.checkTraversable(curPOI.x, curPOI.y, c_x, c_y, false) == -1) curPOI = null;
+
                 //If curPOI is returned as NULL, that means we have explored everything
-                if (curPOI == null) time = 50;
+                //We analyse our items and decide what to do
+                if (curPOI == null) {
 
-                System.out.println("current flood search = " + c_x + " ," + c_y);
-                curObj = 0;
+                    System.out.println("making a smart move");
+
+                    //Our first order is always to open a door first if we have keys
+                    if (keys > 0) {
+
+                        //If we have a key then we look for any doors we can traverse to
+                        for (POI p : pois) {
+
+                            //Check if the poi has been interacted
+                            if (!p.interacted && p.type == '-') {
+                                
+                                //If not then we check if we can traverse there
+                                int waters = map.checkTraversableD(p.x, p.y, c_x, c_y);
+                                System.out.println(waters);
+                                
+                                //If we find a path
+                                if (waters != -1) {
+
+                                    //Set current POI to this location
+                                    curPOI = p;
+                                    curObj = 2;
+
+                                    break;
+                                }
+                            }
+                        }
+                    
+                    //Otherwise we try cut down a tree
+                    } else if (axe > 0) {
+
+                        //If we have an axe look for a tree to cut down
+                        for (POI p : pois) {
+
+                            //Check if the poi has been interacted
+                            if (!p.interacted && p.type == 'T') {
+                                
+                                //If not then we check if we can traverse there
+                                int waters = map.checkTraversableT(p.x, p.y, c_x, c_y);
+                                System.out.println(waters);
+                                //If we find a path
+                                if (waters != -1) {
+
+                                    //Set current POI to this location
+                                    curPOI = p;
+                                    curObj = 3;
+
+                                    break;
+                                }
+                            }
+                        }
+                    } 
+                    
+                    if (curObj == 0) {
+
+                        //If we get here it means we have explored all possible land and got every item we can get to :')
+                        //Oh my god rankini it is 5am and it's almost donnneneeeeeeeeeeeeeeeeee hentaihavennnn
+
+                        //Now we look towards exploring the sea
+                        //This feels like unlocking a new area in an RPG holy crap it feels good
+                        curPOI = map.floodSearch(c_x, c_y, true);
+
+                        //If we find a body of water to cross
+                        if (curPOI != null) {
+                            curPOI.type = '~';
+                            curObj = 5;
+                        }
+                    }
+
+                } else {
+
+
+                }
             }
         }
 
+        System.out.println("current obj = " + curObj);
+
         time++;
         //We move to our current objective
-        if (time < 50) {
-            char travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y);
+        if (time < 200) {
+
+            //If current objective is to unlock a door and we are facing the door
+            if (curObj == 2 && view[1][2] == '-') {
+
+                System.out.println("opening door");
+
+                //Update the map
+                map.demolishPOI(curPOI.x, curPOI.y);
+
+                curPOI.interacted = true;
+                curPOI = null;
+                curObj = 0;
+                keys--;
+
+                //Unlock the door
+                return 'u';
+            }
+
+            //If current objective is to cut a tree and we are facing the tree
+            if (curObj == 3 && view[1][2] == 'T') {
+
+                System.out.println("cutting down tree");
+
+                //Update the map
+                map.demolishPOI(curPOI.x, curPOI.y);
+
+                curPOI.interacted = true;
+                curPOI = null;
+                curObj = 0;
+                raft = true;
+
+                //Unlock the door
+                return 'c';
+            }
+
+            //We pass a type in so that it get's ignored by the A* search as a boundary
+            char travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y, curPOI.type);
+
             System.out.println("direction: " + travelDir);
             map.printMap();
             if (orient == travelDir || travelDir == 'f') {
@@ -152,6 +299,16 @@ public class Agent {
                     c_x++;
                 } else {
                     c_x--;
+                }
+
+                //If we are about to cross a body of water we need to remove a stone if we use a stone
+                if (view[1][2] == '~') {
+
+                    if (stones > 0) stones--;
+                    else {
+                        //Otherwise we need to use a raft
+                        raft = false;
+                    }
                 }
 
                 //We need to check if we would get an item when moved
@@ -280,7 +437,7 @@ public class Agent {
         
         map.printMap();
         printPOI();
-        System.out.println("ehhhhhh" + curPOI.x + "," + curPOI.y);
+        System.out.println("uh" + curPOI.x + "," + curPOI.y);
         System.exit(0);
         return 'f';
     }

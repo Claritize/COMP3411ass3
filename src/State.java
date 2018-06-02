@@ -3,6 +3,8 @@ import java.util.*;
 //Used for pathfinding algorithms
 class State {
 
+    int waters = 0;
+
     ArrayList<Character> moves = new ArrayList<Character>();
     
     //Current co-ordinates
