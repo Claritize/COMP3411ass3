@@ -55,18 +55,10 @@ public class Agent {
     public char get_action(char view[][]) {
 
         /**
-<<<<<<< HEAD
-         * TO DO:
-         * - Add ability to check if POI is accessible
-         * - Pop off grabables and head towards them
-         * - Make exploring more dynamic, traverse to unexplored areas until all areas explored
-         *   before figuring out what to do next
-=======
          * TODO:
          * - Update agent's state (on water/raft/rock) as it traverses
          * - Optimize sea-exploration as it is costly (not much code)
          *      - If we could find a destination across the sea we go for that direct (lots of code)
->>>>>>> 2d75e595dd6c9a0ee95a87cd98026281f3367dfa
          */
 
         /**
@@ -108,7 +100,7 @@ public class Agent {
                     view[i][j] == 'k' ||
                     view[i][j] == 'o' ||
                     view[i][j] == 'O' ||
-                    view[i][j] == 'g') addPOI(view[i][j], j, i);
+                    view[i][j] == 'g') addPOI(view[i][j], j, i);//wait why's this j, i and not i, j
             }
         }
 
@@ -147,7 +139,7 @@ public class Agent {
             //If we couldn't find a grabable
             if (curObj == 0) {
 
-                //Check if our current POI has been explored
+                //Check if our current POI has been explored //WHERE IS BEING SET TO NULL WHEN EXPLORED?
                 if (curPOI != null) {
     
                     //If the current POI still hasn't been explored yet keep on the same path
@@ -306,7 +298,7 @@ public class Agent {
 
                     if (stones > 0) stones--;
                     else {
-                        //Otherwise we need to use a raft
+                        //Otherwise we need to use a raft  
                         raft = false;
                     }
                 }
@@ -504,6 +496,80 @@ public class Agent {
     }
 
 
+    void print_view(char view[][]) {
+        int i, j;
+
+        System.out.println("\n+-----+");
+        for (i = 0; i < 5; i++) {
+            System.out.print("|");
+            for (j = 0; j < 5; j++) {
+                if ((i == 2) && (j == 2)) {
+                    System.out.print('^');
+                } else {
+                    System.out.print(view[i][j]);
+                }
+            }
+            System.out.println("|");
+        }
+        System.out.println("+-----+");
+    }
+
+    public static void main(String[] args) {
+        InputStream in = null;
+        OutputStream out = null;
+        Socket socket = null;
+        Agent agent = new Agent();
+        char view[][] = new char[5][5];
+        char action = 'F';
+        int port;
+        int ch;
+        int i, j;
+
+        if (args.length < 2) {
+            System.out.println("Usage: java Agent -p <port>\n");
+            System.exit(-1);
+        }
+
+        port = Integer.parseInt(args[1]);
+
+        try { // open socket to Game Engine
+            socket = new Socket("localhost", port);
+            in = socket.getInputStream();
+            out = socket.getOutputStream();
+        } catch (IOException e) {
+            System.out.println("Could not bind to port: " + port);
+            System.exit(-1);
+        }
+
+        try { // scan 5-by-5 window around current location
+            while (true) {
+                for (i = 0; i < 5; i++) {
+                    for (j = 0; j < 5; j++) {
+                        if (!((i == 2) && (j == 2))) {
+                            ch = in.read();
+                            if (ch == -1) {
+                                System.exit(-1);
+                            }
+                            view[i][j] = (char) ch;
+                        }
+                    }
+                }
+                //agent.print_view(view); // COMMENT THIS OUT BEFORE SUBMISSION
+                action = agent.get_action(view);
+                out.write(action);
+            }
+        } catch (IOException e) {
+            System.out.println("Lost connection to port: " + port);
+            System.exit(-1);
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+            }
+        }
+    }
+}
+
 
     /**
      * Given set of zero scoped co-ordinates, travels there,
@@ -678,7 +744,7 @@ public class Agent {
     
      * Given a set of goal agent view co-ordinates, finds the quickest way to get there
      * Also updates picking up specific items
-     */
+     *
     private char goDestination(char view[][], int x, int y) {
 
         //Depending on where the dest is we orientate or go forward
@@ -781,78 +847,4 @@ public class Agent {
                 return 'r';
             }
         }
-    }
-
-    void print_view(char view[][]) {
-        int i, j;
-
-        System.out.println("\n+-----+");
-        for (i = 0; i < 5; i++) {
-            System.out.print("|");
-            for (j = 0; j < 5; j++) {
-                if ((i == 2) && (j == 2)) {
-                    System.out.print('^');
-                } else {
-                    System.out.print(view[i][j]);
-                }
-            }
-            System.out.println("|");
-        }
-        System.out.println("+-----+");
-    }
-
-    public static void main(String[] args) {
-        InputStream in = null;
-        OutputStream out = null;
-        Socket socket = null;
-        Agent agent = new Agent();
-        char view[][] = new char[5][5];
-        char action = 'F';
-        int port;
-        int ch;
-        int i, j;
-
-        if (args.length < 2) {
-            System.out.println("Usage: java Agent -p <port>\n");
-            System.exit(-1);
-        }
-
-        port = Integer.parseInt(args[1]);
-
-        try { // open socket to Game Engine
-            socket = new Socket("localhost", port);
-            in = socket.getInputStream();
-            out = socket.getOutputStream();
-        } catch (IOException e) {
-            System.out.println("Could not bind to port: " + port);
-            System.exit(-1);
-        }
-
-        try { // scan 5-by-5 window around current location
-            while (true) {
-                for (i = 0; i < 5; i++) {
-                    for (j = 0; j < 5; j++) {
-                        if (!((i == 2) && (j == 2))) {
-                            ch = in.read();
-                            if (ch == -1) {
-                                System.exit(-1);
-                            }
-                            view[i][j] = (char) ch;
-                        }
-                    }
-                }
-                //agent.print_view(view); // COMMENT THIS OUT BEFORE SUBMISSION
-                action = agent.get_action(view);
-                out.write(action);
-            }
-        } catch (IOException e) {
-            System.out.println("Lost connection to port: " + port);
-            System.exit(-1);
-        } finally {
-            try {
-                socket.close();
-            } catch (IOException e) {
-            }
-        }
-    }
-}
+    }*/
