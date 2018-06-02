@@ -787,7 +787,7 @@ public class Map {
      * Uses A* for water exploration
      * Also needs a type it is travelling to so it doesn't mess with the algorithm
      */
-    public char AStarTravelW(int x, int y, int c_x, int c_y) {
+    public char AStarTravelW(int x, int y, int c_x, int c_y, boolean on_water) {
         
         //Convert co-ordinates to map's scope
         int mx = 80 + x;
@@ -804,8 +804,11 @@ public class Map {
         //Queue of states
         PriorityQueue<State> states = new PriorityQueue<State>(new StateComparator());
 
+        State s = new State(mc_x, mc_y, 0);
+        s.on_water = on_water;
+
         //Add initial state
-        states.offer(new State(mc_x, mc_y, 0));
+        states.offer(s);
         //Mark initial state as visited
         mapCopy[mc_y][mc_x] = '&';
 
@@ -838,7 +841,7 @@ public class Map {
                 mapCopy[current.y+1][current.x] != 'T' &&
                 mapCopy[current.y+1][current.x] != '-' &&
                 mapCopy[current.y+1][current.x] != '.' &&
-                mapCopy[current.y+1][current.x] != ' ') {
+                (mapCopy[current.y+1][current.x] != ' ' || !current.on_water)) {
 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -852,6 +855,11 @@ public class Map {
                 }
                 //Add the upper movement
                 newState.moves.add('v');
+                
+                //Water boolean
+                if (mapCopy[current.y][current.x] == '~') newState.on_water = true;
+                else newState.on_water = current.on_water;
+
                 states.offer(newState);
             }
             //Expand states around current and add to queue
@@ -860,7 +868,7 @@ public class Map {
                 mapCopy[current.y-1][current.x] != 'T' &&
                 mapCopy[current.y-1][current.x] != '-' &&
                 mapCopy[current.y-1][current.x] != '.' &&
-                mapCopy[current.y-1][current.x] != ' ') {
+                (mapCopy[current.y-1][current.x] != ' ' || !current.on_water)) {
 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -874,6 +882,11 @@ public class Map {
                 }
                 //Add the upper movement
                 newState.moves.add('^');
+                
+                //Water boolean
+                if (mapCopy[current.y][current.x] == '~') newState.on_water = true;
+                else newState.on_water = current.on_water;
+
                 states.offer(newState);
             }
             //Expand states around current and add to queue
@@ -882,7 +895,7 @@ public class Map {
                 mapCopy[current.y][current.x+1] != 'T' &&
                 mapCopy[current.y][current.x+1] != '-' &&
                 mapCopy[current.y][current.x+1] != '.' &&
-                mapCopy[current.y][current.x+1] != ' ') {
+                (mapCopy[current.y][current.x+1] != ' ' || !current.on_water)) {
 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -896,6 +909,11 @@ public class Map {
                 }
                 //Add the upper movement
                 newState.moves.add('>');
+                
+                //Water boolean
+                if (mapCopy[current.y][current.x] == '~') newState.on_water = true;
+                else newState.on_water = current.on_water;
+
                 states.offer(newState);
             }
             //Expand states around current and add to queue
@@ -904,7 +922,7 @@ public class Map {
                 mapCopy[current.y][current.x-1] != 'T' &&
                 mapCopy[current.y][current.x-1] != '-' &&
                 mapCopy[current.y][current.x-1] != '.' &&
-                mapCopy[current.y][current.x-1] != ' ') {
+                (mapCopy[current.y][current.x-1] != ' ' || !current.on_water)) {
 
                 //If traversable then make a state for it
                 //Calculate manhattan distance
@@ -918,6 +936,11 @@ public class Map {
                 }
                 //Add the upper movement
                 newState.moves.add('<');
+                
+                //Water boolean
+                if (mapCopy[current.y][current.x] == '~') newState.on_water = true;
+                else newState.on_water = current.on_water;
+
                 states.offer(newState);
             }
 

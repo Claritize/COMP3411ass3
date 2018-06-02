@@ -476,7 +476,7 @@ public class Agent {
             //If this isn't water travel
             else if (curObj != 5) travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y, curPOI.type);
             //If it is
-            else travelDir = map.AStarTravelW(curPOI.x, curPOI.y, c_x, c_y);
+            else travelDir = map.AStarTravelW(curPOI.x, curPOI.y, c_x, c_y, on_water);
 
             System.out.println("direction: " + travelDir);
             if (orient == travelDir) {
