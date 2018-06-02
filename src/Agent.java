@@ -12,6 +12,15 @@ import java.net.*;
 
 public class Agent {
 
+    //Current objectives 
+    //curPOI = co-ords to POI
+    final static int EXPLORE         = 0;
+    final static int GRAB            = 1;
+    final static int UNLOCK          = 2;
+    final static int CHOP            = 3;
+    final static int DESTINATION     = 4;
+    final static int SEA             = 5;
+
     public boolean raft = false;
     public int stones = 0;
     public int axe = 0;
@@ -35,18 +44,7 @@ public class Agent {
     public ArrayList<POI> pois = new ArrayList<POI>();
     public ArrayList<POI> grabs = new ArrayList<POI>();
 
-    /**
-     * Current objective
-     * curObj  = 0: explore
-     *         = 1: grab
-     *         = 2: unlock
-     *         = 3: chop
-     *         = 4: destination
-     *         = 5: sea explore
-     * curPOI = co-ords to POI
-     */
-
-    public int curObj = 0;
+    public int curObj = EXPLORE;
     public POI curPOI = null;
     public int grabsComplete = 0;
 
@@ -56,6 +54,7 @@ public class Agent {
 
     public int time = 0;
 
+    //set to true when the agent knows the treasure location
     public boolean found_treasure = false;
 
     public char get_action(char view[][]) {
@@ -89,7 +88,7 @@ public class Agent {
          *         with going back to [0,0] as objective
          */
 
-        //If the treasure is in front of us just get it lel
+        //Get the treasure if it is front of us
         if (view[1][2] == '$') return 'f';
         
         map.addMap(view, orient, c_x, c_y);
@@ -117,7 +116,7 @@ public class Agent {
         }
 
         System.out.println("curobj= " + curObj + " grabs=" + grabs.size() + " POIs=" + pois.size());
-        if (curObj == 1) {
+        if (curObj == GRAB) {
             System.out.println("getting " + curPOI.type + " xy: " + curPOI.x + "," + curPOI.y + "," + curPOI.interacted);
         }
         printPOI();
@@ -127,8 +126,8 @@ public class Agent {
         //to normal exploration
         
         if (curPOI != null)
-            if (map.explored(curPOI.x, curPOI.y)) {
-                curObj = 0;
+            if (map.explored(curPOI.x, curPOI.y)) { // don get why
+                curObj = EXPLORE;
                 curPOI = null;
 
                 //If we are on a raft we want to try explore on the water as much as we can before disembarking
@@ -137,23 +136,23 @@ public class Agent {
                     //Call the water flood search
                     curPOI = map.floodSearchW(c_x, c_y);
 
-                    //If we find more water to exploire
+                    //If we find more water to explore
                     if (curPOI != null) {
                         curPOI.type = '~';
-                        curObj = 5;
+                        curObj = SEA;
                     }
                 }
             }
 
         //If we have no current objective, pop grabable POIs off list and get them
-        if (curObj == 0) {
+        if (curObj == EXPLORE) {
 
             if (grabsComplete < grabs.size()) {
 
                 //If we found treasure we try get that
                 if (found_treasure) {
 
-                    //Get treassure off the pois list
+                    //Get treasure off the pois list
                     for (POI p : grabs) {
 
                         if (p.type == '$') {
@@ -165,15 +164,15 @@ public class Agent {
                             //If we find a path
                             if (waters == 0) {
                                 curPOI = p;
-                                curObj = 1;
+                                curObj = GRAB;
                                 break;
                             }
                         }
                     }
                 }
                 
-                //If we can't get treasure of there is none found right now
-                if (curObj == 0) {
+                //If we can't get treasure or there is none found right now, and so the objective is to still explore
+                if (curObj == EXPLORE) {
                     //Look for another POI to get
                     for (POI p : grabs) {
 
@@ -185,7 +184,7 @@ public class Agent {
                             //If we find a path
                             if (waters == 0) {
                                 curPOI = p;
-                                curObj = 1;
+                                curObj = GRAB;
                                 break;
                             }
                         }
@@ -195,7 +194,7 @@ public class Agent {
             } 
             
             //If we couldn't find a grabable
-            if (curObj == 0) {
+            if (curObj == EXPLORE) {
 
                 //Check if our current POI has been explored
                 if (curPOI != null) {
@@ -203,13 +202,13 @@ public class Agent {
                     //If the current POI still hasn't been explored yet keep on the same path
                     if (map.map[80-curPOI.y][curPOI.x+80] != '=') {
                         curPOI = map.floodSearch(c_x, c_y, false);
-                        curObj = 0;
+                        curObj = EXPLORE;
                     }
                 } else {
 
                     //Otherwisew try find a new land traversal
                     curPOI = map.floodSearch(c_x, c_y, false);
-                    curObj = 0;
+                    curObj = EXPLORE;
                 }                
 
                 //Check if it's actually traversable
@@ -239,7 +238,7 @@ public class Agent {
 
                                     //Set current POI to this location
                                     curPOI = p;
-                                    curObj = 2;
+                                    curObj = UNLOCK;
 
                                     break;
                                 }
@@ -247,7 +246,7 @@ public class Agent {
                         }
                     } 
 
-                    if (curPOI == null && axe > 0) {
+                    if (curPOI == null && axe > 0) { //CANT THIS JUST BE AN ELSE IF
 
                         //If we have an axe look for a tree to cut down
                         for (POI p : pois) {
@@ -263,7 +262,7 @@ public class Agent {
 
                                     //Set current POI to this location
                                     curPOI = p;
-                                    curObj = 3;
+                                    curObj = CHOP;
 
                                     break;
                                 }
@@ -271,38 +270,33 @@ public class Agent {
                         }
                     } 
                     
-                    if (curObj == 0) {
+                    if (curObj == EXPLORE) {
 
                         //If we get here it means we have explored all possible land and got every item we can get to :')
-                        //Oh my god rankini it is 5am and it's almost donnneneeeeeeeeeeeeeeeeee hentaihavennnn
-
                         //Now we look towards exploring the sea
-                        //This feels like unlocking a new area in an RPG holy crap it feels good
-
                         //Traversing bodies of water is difficult, so we must use resources carefully,
-
                         //If we are on a raft we want to try explore on the water as much as we can before disembarking
                         if (on_water && on_raft) {
 
                             //Call the water flood search
                             curPOI = map.floodSearchW(c_x, c_y);
 
-                            //If we find more water to exploire
+                            //If we find more water to explore
                             if (curPOI != null) {
                                 curPOI.type = '~';
-                                curObj = 5;
+                                curObj = SEA;
                                 System.out.println("Explrong waaatterrr");
                             }
                         }
                         
-                        //If the current objective is still 0
-                        if (curObj == 0) {
+                        //If the current objective is still to explore
+                        if (curObj == EXPLORE) {
                             curPOI = map.floodSearch(c_x, c_y, true);
 
                             //If we find a body of water to cross
                             if (curPOI != null) {
                                 curPOI.type = '~';
-                                curObj = 5;
+                                curObj = SEA;
                             }
                         }
                     }
@@ -311,7 +305,7 @@ public class Agent {
                     //And no more water exploration
                     //Our strategy is to check out of all the grabables, we calculate an associated cost, and whichever one
                     //has the least cost will be our next item to grab
-                    if (curObj == 0) {
+                    if (curObj == EXPLORE) {
 
                         System.out.println("Activating SMART TRAVEL");
 
@@ -348,12 +342,12 @@ public class Agent {
                             currentState = bestState;
                             stateMove = 0;
                             curPOI = bestPoi;
-                            curObj = 1;
+                            curObj = GRAB;
                         }
                     }
                                         
                     //Same as above but for interactables
-                    if (curObj == 0) {
+                    if (curObj == EXPLORE) {
 
                         System.out.println("Activating SMART TRAVEL");
 
@@ -414,8 +408,8 @@ public class Agent {
                             currentState = bestState;
                             stateMove = 0;
                             curPOI = bestPoi;
-                            if (curPOI.type == 'T') curObj = 3;
-                            else curObj = 2;
+                            if (curPOI.type == 'T') curObj = CHOP;
+                            else curObj = UNLOCK;
                         }
                     }
 
@@ -433,7 +427,7 @@ public class Agent {
         if (time < 2000) {
 
             //If current objective is to unlock a door and we are facing the door
-            if (curObj == 2 && view[1][2] == '-') {
+            if (curObj == UNLOCK && view[1][2] == '-') {
 
                 System.out.println("opening door");
 
@@ -442,7 +436,7 @@ public class Agent {
 
                 curPOI.interacted = true;
                 curPOI = null;
-                curObj = 0;
+                curObj = EXPLORE;
                 keys--;
 
                 //Unlock the door
@@ -450,7 +444,7 @@ public class Agent {
             }
 
             //If current objective is to cut a tree and we are facing the tree
-            if (curObj == 3 && view[1][2] == 'T') {
+            if (curObj == CHOP && view[1][2] == 'T') {
 
                 System.out.println("cutting down tree");
 
@@ -459,7 +453,7 @@ public class Agent {
 
                 curPOI.interacted = true;
                 curPOI = null;
-                curObj = 0;
+                curObj = EXPLORE;
                 raft = true;
 
                 //Unlock the door
@@ -474,7 +468,7 @@ public class Agent {
                 travelDir = currentState.moves.get(stateMove);
             }
             //If this isn't water travel
-            else if (curObj != 5) travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y, curPOI.type);
+            else if (curObj != SEA) travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y, curPOI.type);
             //If it is
             else travelDir = map.AStarTravelW(curPOI.x, curPOI.y, c_x, c_y, on_water);
 
@@ -569,7 +563,7 @@ public class Agent {
                         curPOI.interacted = true;
                         grabsComplete++;
                         curPOI = null;
-                        curObj = 0;
+                        curObj = EXPLORE;
                     } else {
                         
                         //Otherwise we have to find it in our POIs and set interactable to false
@@ -593,7 +587,7 @@ public class Agent {
                         curPOI.interacted = true;
                         grabsComplete++;
                         curPOI = null;
-                        curObj = 0;
+                        curObj = EXPLORE;
                     } else {
                         
                         //Otherwise we have to find it in our POIs and set interactable to false
@@ -617,7 +611,7 @@ public class Agent {
                         curPOI.interacted = true;
                         grabsComplete++;
                         curPOI = null;
-                        curObj = 0;
+                        curObj = EXPLORE;
                     } else {
                         
                         //Otherwise we have to find it in our POIs and set interactable to false
@@ -771,7 +765,7 @@ public class Agent {
                     //Check if destination is right infront, then we
                     //need to update objectives
                     if (c_y == y) {
-                        curObj = 0;
+                        curObj = EXPLORE;
                         //Update item counts
                         if (curPOI.type == 'a') axe++;
                         if (curPOI.type == 'o') stones++;
@@ -810,7 +804,7 @@ public class Agent {
                     //Check if destination is right infront, then we
                     //need to update objectives
                     if (c_y == y) {
-                        curObj = 0;
+                        curObj = EXPLORE;
                         //Update item counts
                         if (curPOI.type == 'a') axe++;
                         if (curPOI.type == 'o') stones++;
@@ -854,7 +848,7 @@ public class Agent {
                     //Check if destination is right infront, then we
                     //need to update objectives
                     if (c_x == x) {
-                        curObj = 0;
+                        curObj = EXPLORE;
                         //Update item counts
                         if (curPOI.type == 'a') axe++;
                         if (curPOI.type == 'o') stones++;
@@ -893,7 +887,7 @@ public class Agent {
                     //Check if destination is right infront, then we
                     //need to update objectives
                     if (c_x == x) {
-                        curObj = 0;
+                        curObj = EXPLORE;
                         //Update item counts
                         if (curPOI.type == 'a') axe++;
                         if (curPOI.type == 'o') stones++;
@@ -919,10 +913,85 @@ public class Agent {
         }
     }
 
-    /**
+    void print_view(char view[][]) {
+        int i, j;
+
+        System.out.println("\n+-----+");
+        for (i = 0; i < 5; i++) {
+            System.out.print("|");
+            for (j = 0; j < 5; j++) {
+                if ((i == 2) && (j == 2)) {
+                    System.out.print('^');
+                } else {
+                    System.out.print(view[i][j]);
+                }
+            }
+            System.out.println("|");
+        }
+        System.out.println("+-----+");
+    }
+
+    public static void main(String[] args) {
+        InputStream in = null;
+        OutputStream out = null;
+        Socket socket = null;
+        Agent agent = new Agent();
+        char view[][] = new char[5][5];
+        char action = 'F';
+        int port;
+        int ch;
+        int i, j;
+
+        if (args.length < 2) {
+            System.out.println("Usage: java Agent -p <port>\n");
+            System.exit(-1);
+        }
+
+        port = Integer.parseInt(args[1]);
+
+        try { // open socket to Game Engine
+            socket = new Socket("localhost", port);
+            in = socket.getInputStream();
+            out = socket.getOutputStream();
+        } catch (IOException e) {
+            System.out.println("Could not bind to port: " + port);
+            System.exit(-1);
+        }
+
+        try { // scan 5-by-5 wintow around current location
+            while (true) {
+                for (i = 0; i < 5; i++) {
+                    for (j = 0; j < 5; j++) {
+                        if (!((i == 2) && (j == 2))) {
+                            ch = in.read();
+                            if (ch == -1) {
+                                System.exit(-1);
+                            }
+                            view[i][j] = (char) ch;
+                        }
+                    }
+                }
+                agent.print_view(view); // COMMENT THIS OUT BEFORE SUBMISSION
+                action = agent.get_action(view);
+                out.write(action);
+            }
+        } catch (IOException e) {
+            System.out.println("Lost connection to port: " + port);
+            System.exit(-1);
+        } finally {
+            try {
+                socket.close();
+            } catch (IOException e) {
+            }
+        }
+    }
+}
+
+/**
      * Given a set of goal agent view co-ordinates, finds the quicket way to get there
      * Also updates picking up specific items
      */
+    /*
     private char goDestination(char view[][], int x, int y) {
 
         //Depending on where the dest is we orientate or go forward
@@ -1026,77 +1095,4 @@ public class Agent {
             }
         }
     }
-
-    void print_view(char view[][]) {
-        int i, j;
-
-        System.out.println("\n+-----+");
-        for (i = 0; i < 5; i++) {
-            System.out.print("|");
-            for (j = 0; j < 5; j++) {
-                if ((i == 2) && (j == 2)) {
-                    System.out.print('^');
-                } else {
-                    System.out.print(view[i][j]);
-                }
-            }
-            System.out.println("|");
-        }
-        System.out.println("+-----+");
-    }
-
-    public static void main(String[] args) {
-        InputStream in = null;
-        OutputStream out = null;
-        Socket socket = null;
-        Agent agent = new Agent();
-        char view[][] = new char[5][5];
-        char action = 'F';
-        int port;
-        int ch;
-        int i, j;
-
-        if (args.length < 2) {
-            System.out.println("Usage: java Agent -p <port>\n");
-            System.exit(-1);
-        }
-
-        port = Integer.parseInt(args[1]);
-
-        try { // open socket to Game Engine
-            socket = new Socket("localhost", port);
-            in = socket.getInputStream();
-            out = socket.getOutputStream();
-        } catch (IOException e) {
-            System.out.println("Could not bind to port: " + port);
-            System.exit(-1);
-        }
-
-        try { // scan 5-by-5 wintow around current location
-            while (true) {
-                for (i = 0; i < 5; i++) {
-                    for (j = 0; j < 5; j++) {
-                        if (!((i == 2) && (j == 2))) {
-                            ch = in.read();
-                            if (ch == -1) {
-                                System.exit(-1);
-                            }
-                            view[i][j] = (char) ch;
-                        }
-                    }
-                }
-                agent.print_view(view); // COMMENT THIS OUT BEFORE SUBMISSION
-                action = agent.get_action(view);
-                out.write(action);
-            }
-        } catch (IOException e) {
-            System.out.println("Lost connection to port: " + port);
-            System.exit(-1);
-        } finally {
-            try {
-                socket.close();
-            } catch (IOException e) {
-            }
-        }
-    }
-}
+    */
