@@ -52,6 +52,8 @@ public class Agent {
 
     int time = 0;
 
+    boolean found_treasure = false;
+
     public char get_action(char view[][]) {
 
         /**
@@ -89,6 +91,7 @@ public class Agent {
         //map.printMap();
         System.out.println("AgentPOS = " + c_x + "," + c_y);
         System.out.println("axes = " + axe + " keys = " + keys + " raft = " + raft + " stones = " + stones);
+        System.out.println("on water = " + on_water + " on rock = " + on_rock + " on raft = " + on_raft);
 
         //Scan the view and add POIs
         for (int i = 0; i < 5; i++) {
@@ -99,7 +102,11 @@ public class Agent {
                     view[i][j] == 'k' ||
                     view[i][j] == 'o' ||
                     view[i][j] == 'O' ||
-                    view[i][j] == 'g') addPOI(view[i][j], j, i);
+                    view[i][j] == 'g' ||
+                    view[i][j] == '$') addPOI(view[i][j], j, i);
+
+                //If we find the trasure make found_treasure true
+                if (view[i][j] == '$') found_treasure = true;
             }
         }
 
@@ -113,23 +120,45 @@ public class Agent {
         if (curObj == 0) {
 
             if (grabsComplete < grabs.size()) {
-                
-                //Pop off the list
-                System.out.println("getting new obj");
-                
-                //Look for another POI to get
-                for (POI p : grabs) {
 
-                    if (!p.interacted) {
+                //If we found treasure we try get that
+                if (found_treasure) {
 
-                        //If not then we check if we can traverse there
-                        int waters = map.checkTraversable(p.x, p.y, c_x, c_y, true);
-                        
-                        //If we find a path
-                        if (waters != -1) {
-                            curPOI = p;
-                            curObj = 1;
-                            break;
+                    //Get treassure off the pois list
+                    for (POI p : grabs) {
+
+                        if (p.type == '$') {
+
+                            //Now we chec if it's traversable
+                            //If not then we check if we can traverse there
+                            int waters = map.checkTraversable(p.x, p.y, c_x, c_y, true);
+
+                            //If we find a path
+                            if (waters != -1) {
+                                curPOI = p;
+                                curObj = 1;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                //If we can't get treasure of there is none found right now
+                if (curObj == 0) {
+                    //Look for another POI to get
+                    for (POI p : grabs) {
+
+                        if (!p.interacted) {
+
+                            //If not then we check if we can traverse there
+                            int waters = map.checkTraversable(p.x, p.y, c_x, c_y, true);
+                            
+                            //If we find a path
+                            if (waters != -1) {
+                                curPOI = p;
+                                curObj = 1;
+                                break;
+                            }
                         }
                     }
                 }
@@ -219,6 +248,9 @@ public class Agent {
 
                         //Now we look towards exploring the sea
                         //This feels like unlocking a new area in an RPG holy crap it feels good
+
+                        //Traversing bodies of water is difficult, so we must use resources carefully,
+
                         curPOI = map.floodSearch(c_x, c_y, true);
 
                         //If we find a body of water to cross
@@ -239,7 +271,7 @@ public class Agent {
 
         time++;
         //We move to our current objective
-        if (time < 200) {
+        if (time < 2000) {
 
             //If current objective is to unlock a door and we are facing the door
             if (curObj == 2 && view[1][2] == '-') {
@@ -291,15 +323,68 @@ public class Agent {
                     c_x--;
                 }
 
-                //If we are about to cross a body of water we need to remove a stone if we use a stone
+                //Agent state changes
+                //If we are on and and about to embark on water
                 if (view[1][2] == '~') {
 
-                    if (stones > 0) stones--;
-                    else {
-                        //Otherwise we need to use a raft
-                        raft = false;
+                    //Set water state
+                    on_water = true;
+
+                    //If we aren't on a raft or stone currently we need to use one
+                    if (!on_rock && !on_raft) {
+
+                        //If we have stones then we use those
+                        if (stones > 0) {
+
+                            on_rock = true;
+                            stones--;
+                        } else {
+
+                            //Otherwise we need to use a raft
+                            on_raft = true;
+                            raft = false;
+                        }
                     }
+                
+                //Otherwise if we are on a rock right now and we are going to traverse onto land
+                } else if (on_rock && on_water) {
+
+                    if (view[1][2] == ' ') {
+                        //Set water state
+                        on_water = false;
+                        on_rock = false;
+                    } else if (view[1][2] == '~') {
+
+                        //If we are going to continue traversing on water we must either use a rock or use a raft
+                        //If we have stones then we use those
+                        if (stones > 0) {
+
+                            on_rock = true;
+                            stones--;
+                        } else {
+
+                            on_rock = false;
+                            //Otherwise we need to use a raft
+                            on_raft = true;
+                            raft = false;
+                        }
+                    }
+
+                //Otherwise if we are on a raft right now and we are going to traverse onto land
+                } else if (on_raft && on_water) {
+
+                    if (view[1][2] == ' ') {
+                        //Set water state
+                        on_water = false;
+                        on_raft = false;
+                    }
+                } else if (view[1][2] == '~') {
+
+                    //If we are on a raft we just keep traversing on the raft
+                    on_raft = true;
+                    
                 }
+
 
                 //We need to check if we would get an item when moved
                 if (view[1][2] == 'k') {
@@ -451,7 +536,8 @@ public class Agent {
         if (type == 'a' ||
             type == 'k' ||
             type == 'o' ||
-            type == 'g') {
+            type == 'g' ||
+            type == '$') {
 
             //See if the POI already exists in the set
             for (POI poi : grabs) {
