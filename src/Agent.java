@@ -116,6 +116,31 @@ public class Agent {
         }
         printPOI();
         System.out.println("grabs gotten = " + grabsComplete);
+
+        //Check if we are at the explored location, this is only required for sea exploration since it works a bit differently
+        //to normal exploration
+        /*
+        if (curPOI != null)
+            if (c_x == curPOI.x && c_y == curPOI.y && curObj == 5) {
+                curObj = 0;
+                curPOI = null;
+
+                //If we are on a raft we want to try explore on the water as much as we can before disembarking
+                if (on_water && on_raft) {
+
+                    //Call the water flood search
+                    curPOI = map.floodSearchW(c_x, c_y);
+
+                    //If we find more water to exploire
+                    if (curPOI != null) {
+                        curPOI.type = '~';
+                        curObj = 5;
+                    }
+                }
+            }
+
+        */
+        
         //If we have no current objective, pop grabable POIs off list and get them
         if (curObj == 0) {
 
@@ -251,12 +276,29 @@ public class Agent {
 
                         //Traversing bodies of water is difficult, so we must use resources carefully,
 
-                        curPOI = map.floodSearch(c_x, c_y, true);
+                        //If we are on a raft we want to try explore on the water as much as we can before disembarking
+                        if (on_water && on_raft) {
 
-                        //If we find a body of water to cross
-                        if (curPOI != null) {
-                            curPOI.type = '~';
-                            curObj = 5;
+                            //Call the water flood search
+                            curPOI = map.floodSearchW(c_x, c_y);
+
+                            //If we find more water to exploire
+                            if (curPOI != null) {
+                                curPOI.type = '~';
+                                curObj = 5;
+                                System.out.println("Explrong waaatterrr");
+                            }
+                        }
+
+                        //If the current objective is still 0
+                        if (curObj == 0) {
+                            curPOI = map.floodSearch(c_x, c_y, true);
+
+                            //If we find a body of water to cross
+                            if (curPOI != null) {
+                                curPOI.type = '~';
+                                curObj = 5;
+                            }
                         }
                     }
 
@@ -308,7 +350,12 @@ public class Agent {
             }
 
             //We pass a type in so that it get's ignored by the A* search as a boundary
-            char travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y, curPOI.type);
+            char travelDir ;
+            
+            //If this isn't water travel
+            if (curObj != 5) travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y, curPOI.type);
+            //If it is
+            else travelDir = map.AStarTravelW(curPOI.x, curPOI.y, c_x, c_y);
 
             System.out.println("direction: " + travelDir);
             if (orient == travelDir) {
