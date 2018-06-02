@@ -88,11 +88,17 @@ public class Agent {
          *      1. If we need to cross water to go back, go back to step 1 and redo all proceeding steps 
          *         with going back to [0,0] as objective
          */
+
+        //If the treasure is in front of us just get it lel
+        if (view[1][2] == '$') return 'f';
         
         map.addMap(view, orient, c_x, c_y);
         System.out.println("current_orient = " + orient);
         map.printMap();
+<<<<<<< HEAD
         //map.printMap();
+=======
+>>>>>>> 95c3324be9d7c574a3be2d009e8e986df3dc06f5
         System.out.println("AgentPOS = " + c_x + "," + c_y);
         System.out.println("axes = " + axe + " keys = " + keys + " raft = " + raft + " stones = " + stones);
         System.out.println("on water = " + on_water + " on rock = " + on_rock + " on raft = " + on_raft);
@@ -238,15 +244,26 @@ public class Agent {
 
                                     //Set current POI to this location
                                     curPOI = p;
+<<<<<<< HEAD
                                     curObj = UNLOCK;
+=======
+                                    curObj = 2;
+
+>>>>>>> 95c3324be9d7c574a3be2d009e8e986df3dc06f5
                                     break;
                                 }
                                 //if we don't see any doors in poi then we analyse other items 
                             }
                         }
+<<<<<<< HEAD
                     
                     //Otherwise we try cut down a tree
                     } else if (axe > 0) {
+=======
+                    } 
+
+                    if (curPOI == null && axe > 0) {
+>>>>>>> 95c3324be9d7c574a3be2d009e8e986df3dc06f5
 
                         //If we have an axe look for a tree to cut down
                         for (POI p : pois) {
@@ -256,7 +273,11 @@ public class Agent {
                                 
                                 //If not then we check if we can traverse there
                                 int waters = map.checkTraversableT(p.x, p.y, c_x, c_y);
+<<<<<<< HEAD
                                 //System.out.println(waters);
+=======
+                                System.out.println("Tree:" + waters);
+>>>>>>> 95c3324be9d7c574a3be2d009e8e986df3dc06f5
                                 //If we find a path
                                 if (waters != -1) {
 
@@ -313,6 +334,115 @@ public class Agent {
                     //Our strategy is to check out of all the grabables, we calculate an associated cost, and whichever one
                     //has the least cost will be our next item to grab
                     if (curObj == 0) {
+<<<<<<< HEAD
+=======
+
+                        System.out.println("Activating SMART TRAVEL");
+
+                        State bestState = null;
+                        POI bestPoi = null;
+
+                        for (POI p : grabs) {
+
+                            if (!p.interacted) {
+
+                                State s = map.SmarterAStarTravel(p.x, p.y, c_x, c_y, this, false);
+                                
+                                //If we can find a successful traversal to the goal
+                                if (s != null) {
+                                    
+                                    if (bestState == null) {
+                                        bestState = s;
+                                        bestPoi = p;
+                                    } else {
+
+                                        //Compare the current bestPoi to the new one
+                                        if (s.cost < bestState.cost) {
+                                            bestState = s;
+                                            bestPoi = p;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        //Now we check if we ended up finding something valid to traverse to
+                        if (bestState != null) {
+
+                            currentState = bestState;
+                            stateMove = 0;
+                            curPOI = bestPoi;
+                            curObj = 1;
+                        }
+                    }
+                                        
+                    //Same as above but for interactables
+                    if (curObj == 0) {
+
+                        System.out.println("Activating SMART TRAVEL");
+
+                        State bestState = null;
+                        POI bestPoi = null;
+
+                        for (POI p : pois) {
+
+                            if (!p.interacted) {
+
+                                //Check if we have required items for it
+                                if (p.type == '-' && keys > 0) {
+                                    State s = map.SmarterAStarTravel(p.x, p.y, c_x, c_y, this, true);
+                                    
+                                    //If we can find a successful traversal to the goal
+                                    if (s != null) {
+                                        
+                                        if (bestState == null) {
+                                            bestState = s;
+                                            bestPoi = p;
+                                        } else {
+
+                                            //Compare the current bestPoi to the new one
+                                            if (s.cost < bestState.cost) {
+                                                bestState = s;
+                                                bestPoi = p;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                //Check if we have required items for it
+                                if (p.type == 'T' && axe > 0) {
+                                    State s = map.SmarterAStarTravel(p.x, p.y, c_x, c_y, this, true);
+                                    
+                                    //If we can find a successful traversal to the goal
+                                    if (s != null) {
+                                        
+                                        if (bestState == null) {
+                                            bestState = s;
+                                            bestPoi = p;
+                                        } else {
+
+                                            //Compare the current bestPoi to the new one
+                                            if (s.cost < bestState.cost) {
+                                                bestState = s;
+                                                bestPoi = p;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        //Now we check if we ended up finding something valid to traverse to
+                        if (bestState != null) {
+
+                            currentState = bestState;
+                            stateMove = 0;
+                            curPOI = bestPoi;
+                            if (curPOI.type == 'T') curObj = 3;
+                            else curObj = 2;
+                        }
+                    }
+>>>>>>> 95c3324be9d7c574a3be2d009e8e986df3dc06f5
 
                         State bestState = null;
                         POI bestPoi = null;
@@ -413,7 +543,7 @@ public class Agent {
             //If this isn't water travel
             else if (curObj != 5) travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y, curPOI.type);
             //If it is
-            else travelDir = map.AStarTravelW(curPOI.x, curPOI.y, c_x, c_y);
+            else travelDir = map.AStarTravelW(curPOI.x, curPOI.y, c_x, c_y, on_water);
 
             System.out.println("direction: " + travelDir);
             if (orient == travelDir) {
@@ -565,6 +695,10 @@ public class Agent {
                         }
                     }
                 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 95c3324be9d7c574a3be2d009e8e986df3dc06f5
                 return 'f';
 
             } else if (travelDir == '^') {
