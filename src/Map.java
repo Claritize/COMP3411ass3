@@ -557,6 +557,7 @@ public class Map {
 
         //Add initial state
         states.offer(new State(mc_x, mc_y, 0));
+
         //Mark initial state as visited
         mapCopy[mc_y][mc_x] = '&';
 
@@ -677,8 +678,7 @@ public class Map {
             if (current.moves.size() > 0) return current.moves.get(0);
         }
 
-        System.out.println("we shouldn't be here");
-        System.exit(0);
+        //System.exit(0);
         return 'f';
     }
 
