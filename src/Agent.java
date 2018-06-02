@@ -189,16 +189,17 @@ public class Agent {
                                     //Set current POI to this location
                                     curPOI = p;
                                     curObj = UNLOCK;
-
                                     break;
                                 }
+                                //if we don't see any doors in poi then we analyse other items 
                             }
                         }
                     
                     //Otherwise we try cut down a tree
-                    //curObj conition incl. so that statement won't
-                    //be entered after exiting the previous one, changing curObj from UNLOCK
-                    } else if (curObj == EXPLORE && axe > 0) {
+                    //curObj = explore condition incl. so that the else if statement won't
+                    //be entered after exiting the previous break one and change curObj from UNLOCK
+                    }
+                    if (curObj == EXPLORE && axe > 0) {
 
                         //If we have an axe look for a tree to cut down
                         for (POI p : pois) {
@@ -208,7 +209,7 @@ public class Agent {
                                 
                                 //If not then we check if we can traverse there
                                 int waters = map.checkTraversableT(p.x, p.y, c_x, c_y);
-                                System.out.println(waters);
+                                //System.out.println(waters);
                                 //If we find a path
                                 if (waters != -1) {
 
@@ -227,6 +228,8 @@ public class Agent {
                         //If we get here it means we have explored all possible land and got every item we can get to :')
                         //Oh my god rankini it is 5am and it's almost donnneneeeeeeeeeeeeeeeeee hentaihavennnn
 
+                        //no cos could have got here by having keys and/or axes but not finding doors and/or trees in poi tho
+
                         //Now we look towards exploring the sea
                         //This feels like unlocking a new area in an RPG holy crap it feels good
                         curPOI = map.floodSearch(c_x, c_y, true);
@@ -238,10 +241,7 @@ public class Agent {
                         }
                     }
 
-                } else {
-
-
-                }
+                } 
             }
         }
 
@@ -279,13 +279,24 @@ public class Agent {
                 curPOI.interacted = true;
                 curPOI = null;
                 curObj = EXPLORE;
-                raft = true;
+                raft = true;//why is raft set to true here
 
                 //Unlock the door
                 return 'c';
             }
 
+            //if current objective is sea and is facing forward
+            /*if(curObj == SEA && view[1][2] == '~'){
+                System.out.println("Entering water");
+
+                curPOI.interacted = true;
+                curPOI = null;
+            }*/
+
             //We pass a type in so that it get's ignored by the A* search as a boundary
+            if (curPOI != null) System.out.println("X" + curPOI.x + "Y" + curPOI.y);
+            else System.out.print("curpoi is null ");
+
             char travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y, curPOI.type);
 
             System.out.println("direction: " + travelDir);
@@ -304,16 +315,17 @@ public class Agent {
 
                 //If we are about to cross a body of water we need to remove a stone if we use a stone
                 if (view[1][2] == '~') {
-
+                    curPOI.interacted = true;
+                    curPOI = null;
+                    //curObj =
                     if (stones > 0) stones--;
+                    
                     else {
                         //Otherwise we need to use a raft  
                         raft = false;
                     }
-                }
-
                 //We need to check if we would get an item when moved
-                if (view[1][2] == 'k') {
+                } else if (view[1][2] == 'k') {
 
                     keys++;
                     //We need to check if the object we are picking up is our POI
@@ -334,8 +346,7 @@ public class Agent {
                             }
                         }
                     }
-                }
-                else if (view[1][2] == 'o') {
+                } else if (view[1][2] == 'o') {
 
                     stones++;
                     //We need to check if the object we are picking up is our POI
