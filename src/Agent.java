@@ -88,11 +88,13 @@ public class Agent {
          *      1. If we need to cross water to go back, go back to step 1 and redo all proceeding steps 
          *         with going back to [0,0] as objective
          */
+
+        //If the treasure is in front of us just get it lel
+        if (view[1][2] == '$') return 'f';
         
         map.addMap(view, orient, c_x, c_y);
         System.out.println("current_orient = " + orient);
         map.printMap();
-        //map.printMap();
         System.out.println("AgentPOS = " + c_x + "," + c_y);
         System.out.println("axes = " + axe + " keys = " + keys + " raft = " + raft + " stones = " + stones);
         System.out.println("on water = " + on_water + " on rock = " + on_rock + " on raft = " + on_raft);
@@ -164,7 +166,6 @@ public class Agent {
                             if (waters == 0) {
                                 curPOI = p;
                                 curObj = 1;
-                                System.out.println("lol");
                                 break;
                             }
                         }
@@ -185,7 +186,6 @@ public class Agent {
                             if (waters == 0) {
                                 curPOI = p;
                                 curObj = 1;
-                                System.out.println("auye");
                                 break;
                             }
                         }
@@ -245,9 +245,9 @@ public class Agent {
                                 }
                             }
                         }
-                    
-                    //Otherwise we try cut down a tree
-                    } else if (axe > 0) {
+                    } 
+
+                    if (curPOI == null && axe > 0) {
 
                         //If we have an axe look for a tree to cut down
                         for (POI p : pois) {
@@ -257,7 +257,7 @@ public class Agent {
                                 
                                 //If not then we check if we can traverse there
                                 int waters = map.checkTraversableT(p.x, p.y, c_x, c_y);
-                                System.out.println(waters);
+                                System.out.println("Tree:" + waters);
                                 //If we find a path
                                 if (waters != -1) {
 
@@ -313,6 +313,8 @@ public class Agent {
                     //has the least cost will be our next item to grab
                     if (curObj == 0) {
 
+                        System.out.println("Activating SMART TRAVEL");
+
                         State bestState = null;
                         POI bestPoi = null;
 
@@ -320,7 +322,7 @@ public class Agent {
 
                             if (!p.interacted) {
 
-                                State s = map.SmarterAStarTravel(p.x, p.y, c_x, c_y, this);
+                                State s = map.SmarterAStarTravel(p.x, p.y, c_x, c_y, this, false);
                                 
                                 //If we can find a successful traversal to the goal
                                 if (s != null) {
@@ -347,6 +349,73 @@ public class Agent {
                             stateMove = 0;
                             curPOI = bestPoi;
                             curObj = 1;
+                        }
+                    }
+                                        
+                    //Same as above but for interactables
+                    if (curObj == 0) {
+
+                        System.out.println("Activating SMART TRAVEL");
+
+                        State bestState = null;
+                        POI bestPoi = null;
+
+                        for (POI p : pois) {
+
+                            if (!p.interacted) {
+
+                                //Check if we have required items for it
+                                if (p.type == '-' && keys > 0) {
+                                    State s = map.SmarterAStarTravel(p.x, p.y, c_x, c_y, this, true);
+                                    
+                                    //If we can find a successful traversal to the goal
+                                    if (s != null) {
+                                        
+                                        if (bestState == null) {
+                                            bestState = s;
+                                            bestPoi = p;
+                                        } else {
+
+                                            //Compare the current bestPoi to the new one
+                                            if (s.cost < bestState.cost) {
+                                                bestState = s;
+                                                bestPoi = p;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                //Check if we have required items for it
+                                if (p.type == 'T' && axe > 0) {
+                                    State s = map.SmarterAStarTravel(p.x, p.y, c_x, c_y, this, true);
+                                    
+                                    //If we can find a successful traversal to the goal
+                                    if (s != null) {
+                                        
+                                        if (bestState == null) {
+                                            bestState = s;
+                                            bestPoi = p;
+                                        } else {
+
+                                            //Compare the current bestPoi to the new one
+                                            if (s.cost < bestState.cost) {
+                                                bestState = s;
+                                                bestPoi = p;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        //Now we check if we ended up finding something valid to traverse to
+                        if (bestState != null) {
+
+                            currentState = bestState;
+                            stateMove = 0;
+                            curPOI = bestPoi;
+                            if (curPOI.type == 'T') curObj = 3;
+                            else curObj = 2;
                         }
                     }
 
