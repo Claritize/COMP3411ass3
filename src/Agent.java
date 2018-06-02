@@ -12,6 +12,13 @@ import java.net.*;
 
 public class Agent {
 
+    final static int EXPLORE       = 0;
+    final static int GRAB          = 1;
+    final static int UNLOCK        = 2;
+    final static int CHOP          = 3;
+    final static int DESTINATION   = 4;
+    final static int SEA           = 5;
+
     private boolean raft = false;
     private int stones = 0;
     private int axe = 0;
@@ -46,7 +53,7 @@ public class Agent {
      * curPOI = co-ords to POI
      */
 
-    int curObj = 0;
+    int curObj = EXPLORE;
     POI curPOI = null;
     int grabsComplete = 0;
 
@@ -100,18 +107,18 @@ public class Agent {
                     view[i][j] == 'k' ||
                     view[i][j] == 'o' ||
                     view[i][j] == 'O' ||
-                    view[i][j] == 'g') addPOI(view[i][j], j, i);//wait why's this j, i and not i, j
+                    view[i][j] == 'g') addPOI(view[i][j], j, i);
             }
         }
 
         System.out.println("curobj= " + curObj + " grabs=" + grabs.size() + " POIs=" + pois.size());
-        if (curObj == 1) {
+        if (curObj == GRAB) {
             System.out.println("getting " + curPOI.type + " xy: " + curPOI.x + "," + curPOI.y + "," + curPOI.interacted);
         }
         printPOI();
         System.out.println("grabs gotten = " + grabsComplete);
         //If we have no current objective, pop grabable POIs off list and get them
-        if (curObj == 0) {
+        if (curObj == EXPLORE) {
 
             if (grabsComplete < grabs.size()) {
                 
@@ -129,7 +136,7 @@ public class Agent {
                         //If we find a path
                         if (waters != -1) {
                             curPOI = p;
-                            curObj = 1;
+                            curObj = GRAB;
                             break;
                         }
                     }
@@ -137,21 +144,21 @@ public class Agent {
             } 
             
             //If we couldn't find a grabable
-            if (curObj == 0) {
+            if (curObj == EXPLORE) {
 
-                //Check if our current POI has been explored //WHERE IS BEING SET TO NULL WHEN EXPLORED?
+                //Check if our current POI has been explored 
                 if (curPOI != null) {
     
                     //If the current POI still hasn't been explored yet keep on the same path
                     if (map.map[80-curPOI.y][curPOI.x+80] != '=') {
                         curPOI = map.floodSearch(c_x, c_y, false);
-                        curObj = 0;
+                        curObj = EXPLORE;
                     }
                 } else {
 
                     //Otherwisew try find a new land traversal
                     curPOI = map.floodSearch(c_x, c_y, false);
-                    curObj = 0;
+                    curObj = EXPLORE;
                 }                
 
                 //Check if it's actually traversable
@@ -181,7 +188,7 @@ public class Agent {
 
                                     //Set current POI to this location
                                     curPOI = p;
-                                    curObj = 2;
+                                    curObj = UNLOCK;
 
                                     break;
                                 }
@@ -205,7 +212,7 @@ public class Agent {
 
                                     //Set current POI to this location
                                     curPOI = p;
-                                    curObj = 3;
+                                    curObj = CHOP;
 
                                     break;
                                 }
@@ -213,7 +220,7 @@ public class Agent {
                         }
                     } 
                     
-                    if (curObj == 0) {
+                    if (curObj == EXPLORE) {
 
                         //If we get here it means we have explored all possible land and got every item we can get to :')
                         //Oh my god rankini it is 5am and it's almost donnneneeeeeeeeeeeeeeeeee hentaihavennnn
@@ -225,7 +232,7 @@ public class Agent {
                         //If we find a body of water to cross
                         if (curPOI != null) {
                             curPOI.type = '~';
-                            curObj = 5;
+                            curObj = SEA;
                         }
                     }
 
@@ -243,7 +250,7 @@ public class Agent {
         if (time < 200) {
 
             //If current objective is to unlock a door and we are facing the door
-            if (curObj == 2 && view[1][2] == '-') {
+            if (curObj == UNLOCK && view[1][2] == '-') {
 
                 System.out.println("opening door");
 
@@ -252,7 +259,7 @@ public class Agent {
 
                 curPOI.interacted = true;
                 curPOI = null;
-                curObj = 0;
+                curObj = EXPLORE;
                 keys--;
 
                 //Unlock the door
@@ -260,7 +267,7 @@ public class Agent {
             }
 
             //If current objective is to cut a tree and we are facing the tree
-            if (curObj == 3 && view[1][2] == 'T') {
+            if (curObj == CHOP && view[1][2] == 'T') {
 
                 System.out.println("cutting down tree");
 
@@ -269,7 +276,7 @@ public class Agent {
 
                 curPOI.interacted = true;
                 curPOI = null;
-                curObj = 0;
+                curObj = EXPLORE;
                 raft = true;
 
                 //Unlock the door
@@ -313,7 +320,7 @@ public class Agent {
                         curPOI.interacted = true;
                         grabsComplete++;
                         curPOI = null;
-                        curObj = 0;
+                        curObj = EXPLORE;
                     } else {
                         
                         //Otherwise we have to find it in our POIs and set interactable to false
@@ -335,7 +342,7 @@ public class Agent {
                         curPOI.interacted = true;
                         grabsComplete++;
                         curPOI = null;
-                        curObj = 0;
+                        curObj = EXPLORE;
                     } else {
                         
                         //Otherwise we have to find it in our POIs and set interactable to false
@@ -357,7 +364,7 @@ public class Agent {
                         curPOI.interacted = true;
                         grabsComplete++;
                         curPOI = null;
-                        curObj = 0;
+                        curObj = EXPLORE;
                     } else {
                         
                         //Otherwise we have to find it in our POIs and set interactable to false
