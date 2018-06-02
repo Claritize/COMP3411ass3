@@ -50,6 +50,10 @@ public class Agent {
     public POI curPOI = null;
     public int grabsComplete = 0;
 
+    //Used for more advanced travelling
+    public State currentState = null;
+    public int stateMove = 0;
+
     public int time = 0;
 
     public boolean found_treasure = false;
@@ -157,9 +161,10 @@ public class Agent {
                             int waters = map.checkTraversable(p.x, p.y, c_x, c_y, true);
 
                             //If we find a path
-                            if (waters != -1) {
+                            if (waters == 0) {
                                 curPOI = p;
                                 curObj = 1;
+                                System.out.println("asdasdsads");
                                 break;
                             }
                         }
@@ -177,14 +182,16 @@ public class Agent {
                             int waters = map.checkTraversable(p.x, p.y, c_x, c_y, true);
                             
                             //If we find a path
-                            if (waters != -1) {
+                            if (waters == 0) {
                                 curPOI = p;
                                 curObj = 1;
+                                System.out.println("auye");
                                 break;
                             }
                         }
                     }
                 }
+
             } 
             
             //If we couldn't find a grabable
@@ -287,7 +294,7 @@ public class Agent {
                                 System.out.println("Explrong waaatterrr");
                             }
                         }
-
+                        
                         //If the current objective is still 0
                         if (curObj == 0) {
                             curPOI = map.floodSearch(c_x, c_y, true);
@@ -297,6 +304,49 @@ public class Agent {
                                 curPOI.type = '~';
                                 curObj = 5;
                             }
+                        }
+                    }
+                                        
+                    //If we get to this point, it means that there are no easy grabbables (on land no water traversle)
+                    //And no more water exploration
+                    //Our strategy is to check out of all the grabables, we calculate an associated cost, and whichever one
+                    //has the least cost will be our next item to grab
+                    if (curObj == 0) {
+
+                        State bestState = null;
+                        POI bestPoi = null;
+
+                        for (POI p : grabs) {
+
+                            if (!p.interacted) {
+
+                                State s = map.SmarterAStarTravel(p.x, p.y, c_x, c_y, this);
+                                
+                                //If we can find a successful traversal to the goal
+                                if (s != null) {
+                                    
+                                    if (bestState == null) {
+                                        bestState = s;
+                                        bestPoi = p;
+                                    } else {
+
+                                        //Compare the current bestPoi to the new one
+                                        if (s.cost < bestState.cost) {
+                                            bestState = s;
+                                            bestPoi = p;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        //Now we check if we ended up finding something valid to traverse to
+                        if (bestState != null) {
+
+                            currentState = bestState;
+                            stateMove = 0;
+                            curPOI = bestPoi;
+                            curObj = 1;
                         }
                     }
 
@@ -350,13 +400,20 @@ public class Agent {
             //We pass a type in so that it get's ignored by the A* search as a boundary
             char travelDir ;
             
+            //If currentState is set, that means we have a calculate path to travel on
+            if (currentState != null) {
+                travelDir = currentState.moves.get(stateMove);
+            }
             //If this isn't water travel
-            if (curObj != 5) travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y, curPOI.type);
+            else if (curObj != 5) travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y, curPOI.type);
             //If it is
             else travelDir = map.AStarTravelW(curPOI.x, curPOI.y, c_x, c_y);
 
             System.out.println("direction: " + travelDir);
             if (orient == travelDir) {
+
+                //If current state is set we need to increment stateMove
+                if (currentState != null) stateMove++;
 
                 if (orient == '^') {
                     c_y++;
@@ -438,6 +495,8 @@ public class Agent {
                     //We need to check if the object we are picking up is our POI
                     if (c_x == curPOI.x && c_y == curPOI.y) {
                     
+                        //Reset current state if it's set
+                        if (currentState != null) currentState = null;
                         curPOI.interacted = true;
                         grabsComplete++;
                         curPOI = null;
@@ -460,6 +519,8 @@ public class Agent {
                     //We need to check if the object we are picking up is our POI
                     if (c_x == curPOI.x && c_y == curPOI.y) {
                                         
+                        //Reset current state if it's set
+                        if (currentState != null) currentState = null;
                         curPOI.interacted = true;
                         grabsComplete++;
                         curPOI = null;
@@ -482,6 +543,8 @@ public class Agent {
                     //We need to check if the object we are picking up is our POI
                     if (c_x == curPOI.x && c_y == curPOI.y) {
                     
+                        //Reset current state if it's set
+                        if (currentState != null) currentState = null;
                         curPOI.interacted = true;
                         grabsComplete++;
                         curPOI = null;
