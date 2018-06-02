@@ -24,6 +24,14 @@ public class Map {
     }
 
     /**
+     * Checks if a location has been explored
+     */
+    public boolean explored(int x, int y) {
+        if (map[80-y][80+x] != '=') return true;
+        return false;
+    }
+
+    /**
      * Expand the map by giving a view, current coordinates, and current orientation
      */
     public void addMap(char view[][], char orient, int x, int y) {
@@ -951,6 +959,189 @@ public class Map {
         return 'f';
     }
 
+    /**
+     * Smarter A* to travel from c to x,y
+     * This algorithm takes into account bodies of water that need to e traversed
+     * and used limited resources in the most intelligent way
+     */
+    public char SmarterAStarTravel(int x, int y, int c_x, int c_y, Agent a) {
+        
+        //Convert co-ordinates to map's scope
+        int mx = 80 + x;
+        int my = 80 - y;
+        int mc_x = 80 + c_x;
+        int mc_y = 80 - c_y;
+
+        System.out.println("from " + mc_x + " , " + mc_y + " to " + mx + " , " + my);
+        //Copy map used to mark searched 
+        char [][] mapCopy = new char[map.length][];
+        for(int i = 0; i < map.length; i++)
+            mapCopy[i] = map[i].clone();
+
+        //Queue of states
+        PriorityQueue<State> states = new PriorityQueue<State>(new StateComparator());
+
+        //Add initial state
+        states.offer(new State(mc_x, mc_y, 0));
+        //Mark initial state as visited
+        mapCopy[mc_y][mc_x] = '&';
+
+        //Add the current tools/etc stats of the agent to the state
+        states.peek().raft = a.raft;
+        states.peek().stones = a.stones;
+        states.peek().axe = a.axe;
+        states.peek().keys = a.keys;
+        states.peek().on_water = a.on_water;
+        states.peek().on_raft = a.on_raft;
+        states.peek().on_rock = a.on_rock;
+        states.peek().found_treasure = a.found_treasure;
+
+        State current = null;
+
+        //Looping through priority queue
+        while (states.size() > 0) {
+            /*
+            for (int i = 65; i < 95; i++) {
+                for (int j = 65; j < 95; j++) {
+                    System.out.print(mapCopy[i][j]);
+                }
+                System.out.print('\n');
+            }
+            */
+
+            //Pop off from the queue
+            current = states.poll();
+            //System.out.println("wew " + current.x + " , " + current.y + " to " + mx + " , " + my);
+
+            //Set current tile as explored
+            mapCopy[current.y][current.x] = '&';
+
+            //Check if we are at the goal state
+            if (current.x == mx && current.y == my) break;
+
+            //Expand states around current and add to queue
+            if (mapCopy[current.y+1][current.x] != '&' &&
+                mapCopy[current.y+1][current.x] != '*' &&
+                mapCopy[current.y+1][current.x] != '.' &&
+                mapCopy[current.y+1][current.x] != '~' &&
+                mapCopy[current.y+1][current.x] != 'T' &&
+                mapCopy[current.y+1][current.x] != '-') {
+
+                //If traversable then make a state for it
+                //Calculate manhattan distance
+                int cost = current.moves.size() + 1;
+                if (current.x > 0 && mx > 0) cost += Math.abs(current.x-mx);
+                else if (current.x < 0 && mx < 0) cost += Math.abs(current.x-mx);
+                else cost += Math.abs(Math.abs(current.x)+Math.abs(mx));
+                if (current.y+1 > 0 && my > 0) cost += Math.abs(current.y+1-my);
+                else if (current.y+1 < 0 && my < 0) cost += Math.abs(current.y+1-my);
+                else cost += Math.abs(Math.abs(current.y+1)+Math.abs(my));
+                
+                State newState = new State(current.x, current.y+1, cost);
+                //Add the new path
+                for (Character c : current.moves) {
+                    newState.moves.add(c);
+                }
+                //Add the upper movement
+                newState.moves.add('v');
+                states.offer(newState);
+            }
+            //Expand states around current and add to queue
+            if (mapCopy[current.y-1][current.x] != '&' &&
+                mapCopy[current.y-1][current.x] != '*' &&
+                mapCopy[current.y-1][current.x] != '.' &&
+                mapCopy[current.y-1][current.x] != '~' &&
+                mapCopy[current.y-1][current.x] != 'T' &&
+                mapCopy[current.y-1][current.x] != '-') {
+
+                //If traversable then make a state for it
+                //Calculate manhattan distance
+                int cost = current.moves.size() + 1;
+                if (current.x > 0 && mx > 0) cost += Math.abs(current.x-mx);
+                else if (current.x < 0 && mx < 0) cost += Math.abs(current.x-mx);
+                else cost += Math.abs(Math.abs(current.x)+Math.abs(mx));
+                if (current.y-1 > 0 && my > 0) cost += Math.abs(current.y-1-my);
+                else if (current.y-1 < 0 && my < 0) cost += Math.abs(current.y-1-my);
+                else cost += Math.abs(Math.abs(current.y-1)+Math.abs(my));
+                
+                State newState = new State(current.x, current.y-1, cost);
+                //Add the new path
+                for (Character c : current.moves) {
+                    newState.moves.add(c);
+                }
+                //Add the upper movement
+                newState.moves.add('^');
+                states.offer(newState);
+            }
+            //Expand states around current and add to queue
+            if (mapCopy[current.y][current.x+1] != '&' &&
+                mapCopy[current.y][current.x+1] != '*' &&
+                mapCopy[current.y][current.x+1] != '.' &&
+                mapCopy[current.y][current.x+1] != '~' &&
+                mapCopy[current.y][current.x+1] != 'T' &&
+                mapCopy[current.y][current.x+1] != '-') {
+
+                //If traversable then make a state for it
+                //Calculate manhattan distance
+                int cost = current.moves.size() + 1;
+                if (current.x+1 > 0 && mx > 0) cost += Math.abs(current.x+1-mx);
+                else if (current.x+1 < 0 && mx < 0) cost += Math.abs(current.x+1-mx);
+                else cost += Math.abs(Math.abs(current.x+1)+Math.abs(mx));
+                if (current.y > 0 && my > 0) cost += Math.abs(current.y-my);
+                else if (current.y < 0 && my < 0) cost += Math.abs(current.y-my);
+                else cost += Math.abs(Math.abs(current.y)+Math.abs(my));
+                
+                State newState = new State(current.x+1, current.y, cost);
+                //Add the new path
+                for (Character c : current.moves) {
+                    newState.moves.add(c);
+                }
+                //Add the upper movement
+                newState.moves.add('>');
+                states.offer(newState);
+            }
+            //Expand states around current and add to queue
+            if (mapCopy[current.y][current.x-1] != '&' &&
+                mapCopy[current.y][current.x-1] != '*' &&
+                mapCopy[current.y][current.x-1] != '.' &&
+                mapCopy[current.y][current.x-1] != '~' &&
+                mapCopy[current.y][current.x-1] != 'T' &&
+                mapCopy[current.y][current.x-1] != '-') {
+
+                //If traversable then make a state for it
+                //Calculate manhattan distance
+                int cost = current.moves.size() + 1;
+                if (current.x-1 > 0 && mx > 0) cost += Math.abs(current.x-1-mx);
+                else if (current.x-1 < 0 && mx < 0) cost += Math.abs(current.x-1-mx);
+                else cost += Math.abs(Math.abs(current.x-1)+Math.abs(mx));
+                if (current.y > 0 && my > 0) cost += Math.abs(current.y-my);
+                else if (current.y < 0 && my < 0) cost += Math.abs(current.y-my);
+                else cost += Math.abs(Math.abs(current.y)+Math.abs(my));
+                
+                State newState = new State(current.x-1, current.y, cost);
+                //Add the new path
+                for (Character c : current.moves) {
+                    newState.moves.add(c);
+                }
+                //Add the upper movement
+                newState.moves.add('<');
+                states.offer(newState);
+            }
+
+            //Reset current to null so it works with our algorithm
+            current = null;
+        }
+
+        //If we have found a successful path return the next move we should make
+        if (current != null){
+            if (current.moves.size() > 0) return current.moves.get(0);
+        }
+
+        System.out.println("we shouldn't be here");
+        System.exit(0);
+        return 'f';
+    }
+
 
     /**
      * Flood searches for unexplored areas
@@ -1041,14 +1232,14 @@ public class Map {
        found = false;
        POI retVal = RfloodSearchW(mapCopy, c_x, c_y);
 
-       
+        /*       
        for (int i = 50; i < 110; i++) {
            for (int j = 50; j < 110; j++) {
                System.out.print(mapCopy[i][j]);
            }
            System.out.print('\n');
        }
-       
+       */
 
        if (retVal == null) return null;
 

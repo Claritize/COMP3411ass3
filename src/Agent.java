@@ -12,28 +12,28 @@ import java.net.*;
 
 public class Agent {
 
-    private boolean raft = false;
-    private int stones = 0;
-    private int axe = 0;
-    private int keys = 0;
+    public boolean raft = false;
+    public int stones = 0;
+    public int axe = 0;
+    public int keys = 0;
 
     //Agent states
-    private boolean on_water = false;
-    private boolean on_raft = false;
-    private boolean on_rock = false;
+    public boolean on_water = false;
+    public boolean on_raft = false;
+    public boolean on_rock = false;
 
-    private int c_y = 0;
-    private int c_x = 0;
+    public int c_y = 0;
+    public int c_x = 0;
 
     //Orientation
-    private char orient = 'v';
+    public char orient = 'v';
 
     //Map object
     Map map = new Map();
 
     //List of POI
-    ArrayList<POI> pois = new ArrayList<POI>();
-    ArrayList<POI> grabs = new ArrayList<POI>();
+    public ArrayList<POI> pois = new ArrayList<POI>();
+    public ArrayList<POI> grabs = new ArrayList<POI>();
 
     /**
      * Current objective
@@ -46,13 +46,13 @@ public class Agent {
      * curPOI = co-ords to POI
      */
 
-    int curObj = 0;
-    POI curPOI = null;
-    int grabsComplete = 0;
+    public int curObj = 0;
+    public POI curPOI = null;
+    public int grabsComplete = 0;
 
-    int time = 0;
+    public int time = 0;
 
-    boolean found_treasure = false;
+    public boolean found_treasure = false;
 
     public char get_action(char view[][]) {
 
@@ -119,9 +119,9 @@ public class Agent {
 
         //Check if we are at the explored location, this is only required for sea exploration since it works a bit differently
         //to normal exploration
-        /*
+        
         if (curPOI != null)
-            if (c_x == curPOI.x && c_y == curPOI.y && curObj == 5) {
+            if (map.explored(curPOI.x, curPOI.y)) {
                 curObj = 0;
                 curPOI = null;
 
@@ -139,8 +139,6 @@ public class Agent {
                 }
             }
 
-        */
-        
         //If we have no current objective, pop grabable POIs off list and get them
         if (curObj == 0) {
 
