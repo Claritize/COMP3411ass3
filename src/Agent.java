@@ -156,7 +156,7 @@ public class Agent {
                     }
                 } else {
 
-                    //Otherwisew try find a new land traversal
+                    //Otherwise try find a new land traversal
                     curPOI = map.floodSearch(c_x, c_y, false);
                     curObj = EXPLORE;
                 }                
@@ -196,7 +196,9 @@ public class Agent {
                         }
                     
                     //Otherwise we try cut down a tree
-                    } else if (axe > 0) {
+                    //curObj conition incl. so that statement won't
+                    //be entered after exiting the previous one, changing curObj from UNLOCK
+                    } else if (curObj == EXPLORE && axe > 0) {
 
                         //If we have an axe look for a tree to cut down
                         for (POI p : pois) {
