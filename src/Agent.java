@@ -94,7 +94,7 @@ public class Agent {
         
         map.addMap(view, orient, c_x, c_y);
         System.out.println("current_orient = " + orient);
-        map.printMap();
+        //map.printMap();
         System.out.println("AgentPOS = " + c_x + "," + c_y);
         System.out.println("axes = " + axe + " keys = " + keys + " raft = " + raft + " stones = " + stones);
         System.out.println("on water = " + on_water + " on rock = " + on_rock + " on raft = " + on_raft);
@@ -126,7 +126,7 @@ public class Agent {
         //Check if we are at the explored location, this is only required for sea exploration since it works a bit differently
         //to normal exploration
         
-        if (curPOI != null)
+        if (curPOI != null && curObj == 5)
             if (map.explored(curPOI.x, curPOI.y)) {
                 curObj = 0;
                 curPOI = null;
@@ -137,7 +137,7 @@ public class Agent {
                     //Call the water flood search
                     curPOI = map.floodSearchW(c_x, c_y);
 
-                    //If we find more water to exploire
+                    //If we find more water to explore
                     if (curPOI != null) {
                         curPOI.type = '~';
                         curObj = 5;
@@ -270,42 +270,6 @@ public class Agent {
                             }
                         }
                     } 
-                    
-                    if (curObj == 0) {
-
-                        //If we get here it means we have explored all possible land and got every item we can get to :')
-                        //Oh my god rankini it is 5am and it's almost donnneneeeeeeeeeeeeeeeeee hentaihavennnn
-
-                        //Now we look towards exploring the sea
-                        //This feels like unlocking a new area in an RPG holy crap it feels good
-
-                        //Traversing bodies of water is difficult, so we must use resources carefully,
-
-                        //If we are on a raft we want to try explore on the water as much as we can before disembarking
-                        if (on_water && on_raft) {
-
-                            //Call the water flood search
-                            curPOI = map.floodSearchW(c_x, c_y);
-
-                            //If we find more water to exploire
-                            if (curPOI != null) {
-                                curPOI.type = '~';
-                                curObj = 5;
-                                System.out.println("Explrong waaatterrr");
-                            }
-                        }
-                        
-                        //If the current objective is still 0
-                        if (curObj == 0) {
-                            curPOI = map.floodSearch(c_x, c_y, true);
-
-                            //If we find a body of water to cross
-                            if (curPOI != null) {
-                                curPOI.type = '~';
-                                curObj = 5;
-                            }
-                        }
-                    }
                                         
                     //If we get to this point, it means that there are no easy grabbables (on land no water traversle)
                     //And no more water exploration
@@ -416,6 +380,42 @@ public class Agent {
                             curPOI = bestPoi;
                             if (curPOI.type == 'T') curObj = 3;
                             else curObj = 2;
+                        }
+                    }
+                    
+                    if (curObj == 0) {
+
+                        //If we get here it means we have explored all possible land and got every item we can get to :')
+                        //Oh my god rankini it is 5am and it's almost donnneneeeeeeeeeeeeeeeeee hentaihavennnn
+
+                        //Now we look towards exploring the sea
+                        //This feels like unlocking a new area in an RPG holy crap it feels good
+
+                        //Traversing bodies of water is difficult, so we must use resources carefully,
+
+                        //If we are on a raft we want to try explore on the water as much as we can before disembarking
+                        if (on_water && on_raft) {
+
+                            //Call the water flood search
+                            curPOI = map.floodSearchW(c_x, c_y);
+
+                            //If we find more water to exploire
+                            if (curPOI != null) {
+                                curPOI.type = '~';
+                                curObj = 5;
+                                System.out.println("Explrong waaatterrr");
+                            }
+                        }
+                        
+                        //If the current objective is still 0
+                        if (curObj == 0) {
+                            curPOI = map.floodSearch(c_x, c_y, true);
+
+                            //If we find a body of water to cross
+                            if (curPOI != null) {
+                                curPOI.type = '~';
+                                curObj = 5;
+                            }
                         }
                     }
 

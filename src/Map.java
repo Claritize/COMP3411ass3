@@ -1042,6 +1042,7 @@ public class Map {
                 mapCopy[current.y+1][current.x] != '*' &&
                 mapCopy[current.y+1][current.x] != '.' &&
                 mapCopy[current.y+1][current.x] != 'T' &&
+                mapCopy[current.y+1][current.x] != '=' &&
                 mapCopy[current.y+1][current.x] != '-') {
 
                 //Check if it's water
@@ -1177,6 +1178,7 @@ public class Map {
                 mapCopy[current.y-1][current.x] != '*' &&
                 mapCopy[current.y-1][current.x] != '.' &&
                 mapCopy[current.y-1][current.x] != 'T' &&
+                mapCopy[current.y-1][current.x] != '=' &&
                 mapCopy[current.y-1][current.x] != '-') {
 
                 //Check if it's water
@@ -1317,6 +1319,7 @@ public class Map {
                 mapCopy[current.y][current.x+1] != '*' &&
                 mapCopy[current.y][current.x+1] != '.' &&
                 mapCopy[current.y][current.x+1] != 'T' &&
+                mapCopy[current.y][current.x+1] != '=' &&
                 mapCopy[current.y][current.x+1] != '-') {
 
                 //Check if it's water
@@ -1457,6 +1460,7 @@ public class Map {
                 mapCopy[current.y][current.x-1] != '*' &&
                 mapCopy[current.y][current.x-1] != '.' &&
                 mapCopy[current.y][current.x-1] != 'T' &&
+                mapCopy[current.y][current.x-1] != '=' &&
                 mapCopy[current.y][current.x-1] != '-') {
 
                 //Check if it's water
