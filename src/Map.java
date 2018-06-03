@@ -87,6 +87,7 @@ public class Map {
 
     /**
      * When we open a door or cut down a tree we have to delete the poi from the map
+     * Same for when we find the treasure
      */
     public void demolishPOI(int x, int y) {
 

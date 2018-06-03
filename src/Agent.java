@@ -60,13 +60,6 @@ public class Agent {
     public char get_action(char view[][]) {
 
         /**
-         * TODO:
-         * - Update agent's state (on water/raft/rock) as it traverses
-         * - Optimize sea-exploration as it is costly (not much code)
-         *      - If we could find a destination across the sea we go for that direct (lots of code)
-         */
-
-        /**
          * Strategy
          * 
          * 1. Look around to pick up items and record points of interests, will attempt to explore
@@ -86,10 +79,14 @@ public class Agent {
          *    5. If we see treasure, make sure we get it
          *      1. If we need to cross water to go back, go back to step 1 and redo all proceeding steps 
          *         with going back to [0,0] as objective
+         * 
          */
 
         //Get the treasure if it is front of us
-        if (view[1][2] == '$') return 'f';
+        if (view[1][2] == '$'){
+            return 'f';
+        }
+
         
         map.addMap(view, orient, c_x, c_y);
         System.out.println("current_orient = " + orient);
@@ -126,7 +123,7 @@ public class Agent {
         //to normal exploration
         
         if (curPOI != null)
-            if (map.explored(curPOI.x, curPOI.y)) { // don get why
+            if (map.explored(curPOI.x, curPOI.y)) { //WHY HOW IS THIS CONDN NEEDED/WORKS
                 curObj = EXPLORE;
                 curPOI = null;
 
@@ -159,7 +156,10 @@ public class Agent {
 
                             //Now we chec if it's traversable
                             //If not then we check if we can traverse there
-                            int waters = map.checkTraversable(p.x, p.y, c_x, c_y, true);
+                            int waters = map.checkTraversable(p.x, p.y, c_x, c_y, true); //WHAT IF IT WAS IN THE WATER (>=1) BUT IN THE VIEW? 
+                                                                                        //imho SHOULD STILL GO DIRECTLY TO GET IT
+                                                                                        //ALTHO COULD NOT HAVE THE ITEMS NEEDED 
+                                                                                        //MEANING CUROBJ NEEDS TO BE 'EXPLORE' OR 'SEA'
 
                             //If we find a path
                             if (waters == 0) {
@@ -190,7 +190,6 @@ public class Agent {
                         }
                     }
                 }
-
             } 
             
             //If we couldn't find a grabable
@@ -246,13 +245,16 @@ public class Agent {
                         }
                     } 
 
-                    if (curPOI == null && axe > 0) { //CANT THIS JUST BE AN ELSE IF
+                    if (curPOI == null && axe > 0) { 
 
-                        //If we have an axe look for a tree to cut down
+                        //If we have an axe look for a tree to cut down   //THIS SHOULDN'TBE PRIORITY, AXES ARE PERMANENT ITEMS 
+                                                                            //WOULD MEAN YOU KEEP CUTTING- AGENT ONLY KEEPS ONE RAFT AT A TIME
+                                                                          //ACTUALLY wouldn't keep cutting..cos exploration is only done once?!-should be looped strattegy
+                                                                            
                         for (POI p : pois) {
 
                             //Check if the poi has been interacted
-                            if (!p.interacted && p.type == 'T') {
+                            if (!p.interacted && p.type == 'T' && raft == false) {//SO ADDED THE CHECK FOR HAS A RAFT ALREADY HERE (this compiled and ran)
                                 
                                 //If not then we check if we can traverse there
                                 int waters = map.checkTraversableT(p.x, p.y, c_x, c_y);
@@ -279,7 +281,7 @@ public class Agent {
                         if (on_water && on_raft) {
 
                             //Call the water flood search
-                            curPOI = map.floodSearchW(c_x, c_y);
+                            curPOI = map.floodSearchW(c_x, c_y); //WHAT DOES THIS GIVE ME?
 
                             //If we find more water to explore
                             if (curPOI != null) {
@@ -456,7 +458,7 @@ public class Agent {
                 curObj = EXPLORE;
                 raft = true;
 
-                //Unlock the door
+                //chop the tree
                 return 'c';
             }
 
@@ -773,6 +775,8 @@ public class Agent {
                         curPOI.interacted = true;
                         //Reset curPOI;
                         curPOI = null;
+
+                        //CHECK FOR TREASURE ITEM HERE AND RETURN?
                     }
 
                     return 'f';
@@ -903,10 +907,6 @@ public class Agent {
         } else {
             //If we aren't directly in line with the destination on an axis
             //We attempt to move closer to it.
-
-            //This part uses
-
-
             System.out.println("I shouldn't be here :(");
             System.exit(0);
             return 'f';
@@ -986,113 +986,3 @@ public class Agent {
         }
     }
 }
-
-/**
-     * Given a set of goal agent view co-ordinates, finds the quicket way to get there
-     * Also updates picking up specific items
-     */
-    /*
-    private char goDestination(char view[][], int x, int y) {
-
-        //Depending on where the dest is we orientate or go forward
-
-        //First we check if the destination is in front of us
-        if (y < 2) {
-
-            //Checks if an item is directly infront and pick its up if so
-            if (view[1][2] == 'k') keys++;
-            if (view[1][2] == 'a') axe++;
-            if (view[1][2] == 'o') stones++;
-
-            //We also update the current co-ordinate
-            if (orient == '^') {
-                c_y++;
-            } else if (orient == 'v') {
-                c_y--;
-            } else if (orient == '<') {
-                c_x--;
-            } else {
-                c_x++;
-            }
-
-            //If so we could jsut walk towards it until it isnt
-            return 'f';
-        
-        //Otherwise we check if its directly to our side
-        } else if (y == 2) {
-
-            //If to our left
-            if (x < 2) {
-
-                //We also adjust the current orientation
-                if (orient == '^') {
-                    orient = '<';
-                } else if (orient == 'v') {
-                    orient = '>';
-                } else if (orient == '<') {
-                    orient = 'v';
-                } else {
-                    orient = '^';
-                }
-
-                //Turn left
-                return 'l';
-            
-            //If to our right
-            } else{
-
-                //We also adjust the current orientation
-                if (orient == '^') {
-                    orient = '>';
-                } else if (orient == 'v') {
-                    orient = '<';
-                } else if (orient == '<') {
-                    orient = '^';
-                } else {
-                    orient = 'v';
-                }
-
-                //Turn right
-                return 'r';
-            }
-
-        //Finally if the destination is behind us we turn depending on which which quadrant it is in
-        } else {
-
-            //If left
-            if (x < 2) {
-
-                //We also adjust the current orientation
-                if (orient == '^') {
-                    orient = '<';
-                } else if (orient == 'v') {
-                    orient = '>';
-                } else if (orient == '<') {
-                    orient = 'v';
-                } else {
-                    orient = '^';
-                }
-
-                //Turn left
-                return 'l';
-            
-            //If right
-            } else {
-
-                //We also adjust the current orientation
-                if (orient == '^') {
-                    orient = '>';
-                } else if (orient == 'v') {
-                    orient = '<';
-                } else if (orient == '<') {
-                    orient = '^';
-                } else {
-                    orient = 'v';
-                }
-                
-                //Turn right
-                return 'r';
-            }
-        }
-    }
-    */
