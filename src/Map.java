@@ -827,8 +827,7 @@ public class Map {
 
             //Pop off from the queue
             current = states.poll();
-            //System.out.println("wew " + current.x + " , " + current.y + " to " + mx + " , " + my);
-
+            
             //Set current tile as explored
             mapCopy[current.y][current.x] = '&';
 
@@ -952,7 +951,7 @@ public class Map {
         if (current != null){
             if (current.moves.size() > 0) return current.moves.get(0);
         }
-
+     
         System.out.println("we shouldn't be here WATER");
         System.exit(0);
         return 'f';

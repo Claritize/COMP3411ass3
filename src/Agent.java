@@ -4,6 +4,9 @@
  *  Sample Agent for Text-Based Adventure Game
  *  COMP3411/9414/9814 Artificial Intelligence
  *  UNSW Session 1, 2018
+ * 
+ * Anna Zhang
+ * Ranjini Ravishankar z5131315
 */
 
 import java.util.*;
@@ -404,13 +407,9 @@ public class Agent {
                     if (curObj == 0) {
 
                         //If we get here it means we have explored all possible land and got every item we can get to :')
-                        //Oh my god rankini it is 5am and it's almost donnneneeeeeeeeeeeeeeeeee hentaihavennnn
 
                         //Now we look towards exploring the sea
-                        //This feels like unlocking a new area in an RPG holy crap it feels good
-
                         //Traversing bodies of water is difficult, so we must use resources carefully,
-
                         //If we are on a raft we want to try explore on the water as much as we can before disembarking
                         if (on_water && on_raft) {
 
@@ -475,7 +474,7 @@ public class Agent {
             //Get gold if it's gold
             if (view[1][2] == '$') {
 
-                System.out.println("getting goldddddddddddddddddddddddddddddddddddddddddddddddd");
+                //System.out.println("getting gold");
 
                 //Update the map
                 map.demolishPOI(curPOI.x, curPOI.y);
@@ -530,16 +529,14 @@ public class Agent {
             }
 
             //We pass a type in so that it get's ignored by the A* search as a boundary
-            char travelDir ;
+            char travelDir = 'a';
             
             //If currentState is set, that means we have a calculate path to travel on
             if (currentState != null) {
                 travelDir = currentState.moves.get(stateMove);
-            }
-            //If this isn't water travel
-            else if (curObj != 5) travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y, curPOI.type);
+            }else if (curObj != 5) travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y, curPOI.type);
             //If it is
-            else travelDir = map.AStarTravelW(curPOI.x, curPOI.y, c_x, c_y, on_water);
+            else travelDir = map.AStarTravelW(curPOI.x, curPOI.y, c_x, c_y, on_water); 
 
             System.out.println("direction: " + travelDir);
             if (orient == travelDir) {
@@ -564,8 +561,9 @@ public class Agent {
                     //Set water state
                     on_water = true;
 
-                    //If we aren't on a raft or stone currently we need to use one
-                    if (!on_rock && !on_raft) {
+                    //If we aren't on a raft atm , we need to use a stone //SWITCH THIS ORDER AROUND NEXT TRY
+                    if (//!on_rock && 
+                    !on_raft) {
 
                         //If we have stones then we use those
                         if (stones > 0) {
@@ -616,6 +614,7 @@ public class Agent {
 
                     //If we are on a raft we just keep traversing on the raft
                     on_raft = true;
+
                     
                 }
 
@@ -645,7 +644,7 @@ public class Agent {
                         }
                     }
                 }
-                if (view[1][2] == 'o') {
+                if (view[1][2] == 'o') { 
 
                     stones++;
                     //We need to check if the object we are picking up is our POI
@@ -812,284 +811,6 @@ public class Agent {
         }
     }
 
-    /**
-     * Given set of zero scoped co-ordinates, travels there,
-     * co-ordinates must be accessible 
-     */
-    private char travelDest(int x, int y) {
-        
-        //First we check if the goal is directly north/south/east/west of our current location
-        if (c_x == x) {
-
-            //This means the destination is directly up or down
-            //Now we check which it is
-            if (c_y < y) {
-                
-                //If it is above us
-                //Now we check our orientation and move appropriately
-                if (orient == '^') {
-                    
-                    c_y++;
-
-                    //Check if destination is right infront, then we
-                    //need to update objectives
-                    if (c_y == y) {
-                        curObj = 0;
-                        //Update item counts
-                        if (curPOI.type == 'a') axe++;
-                        if (curPOI.type == 'o') stones++;
-                        if (curPOI.type == 'k') keys++;
-                        curPOI.interacted = true;
-                        //Reset curPOI;
-                        curPOI = null;
-                    }
-
-                    return 'f';
-                } else if (orient == 'v') {
-
-                    orient = '>';
-                    return 'l';
-                } else if (orient == '>') {
-
-                    orient = '^';
-                    return 'l';
-                } else {
-
-                    orient = '^';
-                    return 'r';
-                }
-            } else {
-
-                //If it is below us
-                //Now we check our orientation and move appropriately
-                if (orient == '^') {
-    
-                    orient = '>';
-                    return 'r';
-                } else if (orient == 'v') {
-
-                    c_y--;
-
-                    //Check if destination is right infront, then we
-                    //need to update objectives
-                    if (c_y == y) {
-                        curObj = 0;
-                        //Update item counts
-                        if (curPOI.type == 'a') axe++;
-                        if (curPOI.type == 'o') stones++;
-                        if (curPOI.type == 'k') keys++;
-                        curPOI.interacted = true;
-                        //Reset curPOI;
-                        curPOI = null;
-                    }
-                    
-                    return 'f';
-                } else if (orient == '>') {
-
-                    orient = 'v';
-                    return 'r';
-                } else {
-
-                    orient = 'v';
-                    return 'l';
-                }
-            }
-        } else if (c_y == y) {
-
-            //This means the destination is directly left or right
-            //Now we check which it is
-            if (c_x < x) {
-                
-                //If it is to our right
-                //Now we check our orientation and move appropriately
-                if (orient == '^') {
-    
-                    orient = '>';
-                    return 'r';
-                } else if (orient == 'v') {
-
-                    orient = '>';
-                    return 'l';
-                } else if (orient == '>') {
-
-                    c_x++;
-
-                    //Check if destination is right infront, then we
-                    //need to update objectives
-                    if (c_x == x) {
-                        curObj = 0;
-                        //Update item counts
-                        if (curPOI.type == 'a') axe++;
-                        if (curPOI.type == 'o') stones++;
-                        if (curPOI.type == 'k') keys++;
-                        curPOI.interacted = true;
-                        //Reset curPOI;
-                        curPOI = null;
-                    }
-                    
-                    return 'f';
-                } else {
-
-                    orient = '^';
-                    return 'r';
-                }
-            } else {
-
-                //If it is to our left
-                //Now we check our orientation and move appropriately
-                if (orient == '^') {
-    
-                    orient = '<';
-                    return 'l';
-                } else if (orient == 'v') {
-
-                    orient = '<';
-                    return 'r';
-                } else if (orient == '>') {
-
-                    orient = 'v';
-                    return 'r';
-                } else {
-
-                    c_x--;
-
-                    //Check if destination is right infront, then we
-                    //need to update objectives
-                    if (c_x == x) {
-                        curObj = 0;
-                        //Update item counts
-                        if (curPOI.type == 'a') axe++;
-                        if (curPOI.type == 'o') stones++;
-                        if (curPOI.type == 'k') keys++;
-                        curPOI.interacted = true;
-                        //Reset curPOI;
-                        curPOI = null;
-                    }
-                    
-                    return 'f';
-                }
-            }
-        } else {
-            //If we aren't directly in line with the destination on an axis
-            //We attempt to move closer to it.
-
-            //This part uses
-
-
-            System.out.println("I shouldn't be here :(");
-            System.exit(0);
-            return 'f';
-        }
-    }
-
-    /**
-     * Given a set of goal agent view co-ordinates, finds the quicket way to get there
-     * Also updates picking up specific items
-     */
-    private char goDestination(char view[][], int x, int y) {
-
-        //Depending on where the dest is we orientate or go forward
-
-        //First we check if the destination is in front of us
-        if (y < 2) {
-
-            //Checks if an item is directly infront and pick its up if so
-            if (view[1][2] == 'k') keys++;
-            if (view[1][2] == 'a') axe++;
-            if (view[1][2] == 'o') stones++;
-
-            //We also update the current co-ordinate
-            if (orient == '^') {
-                c_y++;
-            } else if (orient == 'v') {
-                c_y--;
-            } else if (orient == '<') {
-                c_x--;
-            } else {
-                c_x++;
-            }
-
-            //If so we could jsut walk towards it until it isnt
-            return 'f';
-        
-        //Otherwise we check if its directly to our side
-        } else if (y == 2) {
-
-            //If to our left
-            if (x < 2) {
-
-                //We also adjust the current orientation
-                if (orient == '^') {
-                    orient = '<';
-                } else if (orient == 'v') {
-                    orient = '>';
-                } else if (orient == '<') {
-                    orient = 'v';
-                } else {
-                    orient = '^';
-                }
-
-                //Turn left
-                return 'l';
-            
-            //If to our right
-            } else{
-
-                //We also adjust the current orientation
-                if (orient == '^') {
-                    orient = '>';
-                } else if (orient == 'v') {
-                    orient = '<';
-                } else if (orient == '<') {
-                    orient = '^';
-                } else {
-                    orient = 'v';
-                }
-
-                //Turn right
-                return 'r';
-            }
-
-        //Finally if the destination is behind us we turn depending on which which quadrant it is in
-        } else {
-
-            //If left
-            if (x < 2) {
-
-                //We also adjust the current orientation
-                if (orient == '^') {
-                    orient = '<';
-                } else if (orient == 'v') {
-                    orient = '>';
-                } else if (orient == '<') {
-                    orient = 'v';
-                } else {
-                    orient = '^';
-                }
-
-                //Turn left
-                return 'l';
-            
-            //If right
-            } else {
-
-                //We also adjust the current orientation
-                if (orient == '^') {
-                    orient = '>';
-                } else if (orient == 'v') {
-                    orient = '<';
-                } else if (orient == '<') {
-                    orient = '^';
-                } else {
-                    orient = 'v';
-                }
-                
-                //Turn right
-                return 'r';
-            }
-        }
-    }
-
     void print_view(char view[][]) {
         int i, j;
 
@@ -1148,7 +869,7 @@ public class Agent {
                         }
                     }
                 }
-                agent.print_view(view); // COMMENT THIS OUT BEFORE SUBMISSION
+                //agent.print_view(view); // COMMENT THIS OUT BEFORE SUBMISSION
                 action = agent.get_action(view);
                 out.write(action);
             }
