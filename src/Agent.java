@@ -61,6 +61,30 @@ public class Agent {
     public char get_action(char view[][]) {
 
         /**
+         * Summary:
+         * 
+         * I decided to approach this assignment in a way to try and mimic how I would play it if I was the AI,
+         * this led me to write a strategy below which I followed throughout the programming of the AI. 
+         *  
+         * The main data structure I used was the Map, which was a recording of all of the areas the AI has dicovered.
+         * This data structure was crucial for all the smart algorithms used so that it could do more than just randomly
+         * roam around.
+         * 
+         * The algorithms I used to accomplish the strategy included A* search and floodfill. I modified the flood
+         * fill algorithm to do a floodsearch instead, which was very easy to implement for exploring unexplored areas.
+         * I used two versions of A* with difference costs for navigating. 3 were used for onland navigation to items
+         * and points of interest, and one was used to navigate over water. The reason I did this was to streamline
+         * the amount of processing required, restricting what the A* could actually search for.
+         * 
+         * I also used POI (point of interest) and State data struttures to help me keep track of what items I had
+         * interated with, as well as to allow me to create paths for the agent to traverse. 
+         * 
+         * Ultimately, the agent will have a predefined set of rules made using if/else statements which call the appropriate
+         * actions to do the best action in that particular scenario.
+         * 
+         */
+
+        /**
          * Strategy
          * 
          * 1. Look around to pick up items and record points of interests, will attempt to explore
@@ -119,14 +143,23 @@ public class Agent {
 
         //If we have the gold jsut go back to starting place
         if (haveGold) {
-            State s = map.HomeAStarTravel(0, 0, c_x, c_y, this, false);
-            // if (s == null)
-            //     System.out.println("HAVE GOLD STATE IS NULL!!!!");
-            currentState = s;
-            stateMove = 0;
-            curPOI = new POI(' ', 0, 0);
-            curObj = GRAB;
-            System.out.println("WE GOT THE GOALD");           
+
+            //if we right near start
+            if ((c_x == 0 && c_y == 1) ||
+                (c_x == 0 && c_y == -1) ||
+                (c_x == 1 && c_y == 0) ||
+                (c_x == -1 && c_y == 0)) {
+
+                //In this case we will just try get to it as a poi;
+                curPOI = new POI(' ', 0, 0);
+                curObj = 1;
+            } else {
+                State s = map.SmarterAStarTravel(0, 0, c_x, c_y, this, false);
+                currentState = s;
+                stateMove = 0;
+                curPOI = new POI(' ', 0, 0);
+                curObj = 1;                
+            }
         }
 
         if (curPOI != null && curObj == SEA)
@@ -152,38 +185,13 @@ public class Agent {
         if (curObj == EXPLORE) {
 
             if (grabsComplete < grabs.size()) {
-
-                //If we found treasure we try get that
-                if (found_treasure) {
-
-                    //Get treasure off the pois list
-                    for (POI p : grabs) {
-
-                        if (p.type == '$') {
-
-                            //Now we chec if it's traversable
-                            //If not then we check if we can traverse there
-                            int waters = map.checkTraversable(p.x, p.y, c_x, c_y, true); //WHAT IF IT WAS IN THE WATER (>=1) BUT IN THE VIEW? 
-                                                                                        //imho SHOULD STILL GO DIRECTLY TO GET IT
-                                                                                        //ALTHO COULD NOT HAVE THE ITEMS NEEDED 
-                                                                                        //MEANING CUROBJ NEEDS TO BE 'EXPLORE' OR 'SEA'
-
-                            //If we find a path
-                            if (waters == 0) {
-                                curPOI = p;
-                                curObj = GRAB;
-                                break;
-                            }
-                        }
-                    }
-                }
                 
                 //If we can't get treasure or there is none found right now, and so the objective is to still explore
                 if (curObj == EXPLORE) {
                     //Look for another POI to get
                     for (POI p : grabs) {
 
-                        if (!p.interacted) {
+                        if (!p.interacted && p.type != '$') {
 
                             //If not then we check if we can traverse there
                             int waters = map.checkTraversable(p.x, p.y, c_x, c_y, true);
@@ -244,7 +252,9 @@ public class Agent {
 
                                     //Set current POI to this location
                                     curPOI = p;
-                                    curObj = UNLOCK;
+                                    curObj = 2;
+                                    currentState = null;
+                                    stateMove = 0;
 
                                     break;
                                 }
@@ -271,7 +281,9 @@ public class Agent {
 
                                     //Set current POI to this location
                                     curPOI = p;
-                                    curObj = CHOP;
+                                    curObj = 3;
+                                    currentState = null;
+                                    stateMove = 0;
 
                                     break;
                                 }
@@ -292,7 +304,7 @@ public class Agent {
 
                         for (POI p : grabs) {
 
-                            if (!p.interacted) {
+                            if (!p.interacted && p.type != '$') {
 
                                 State s = map.SmarterAStarTravel(p.x, p.y, c_x, c_y, this, false);
                                 
@@ -425,6 +437,28 @@ public class Agent {
                                 curObj = 5;
                             }
                         }
+
+                        //If we found treasure we try get that
+                        if (found_treasure && curObj == 0) {
+
+                            //Get treassure off the pois list
+                            for (POI p : grabs) {
+
+                                if (p.type == '$') {
+
+                                    //Now we chec if it's traversable
+                                    //If not then we check if we can traverse there
+                                    State s = map.SmarterAStarTravel(p.x, p.y, c_x, c_y, this, false);
+
+                                    currentState = s;
+                                    stateMove = 0;
+                                    curPOI = p;
+                                    curObj = 1;
+                                    break;
+                                    
+                                }
+                            }
+                        }
                     }
 
                 } else {
@@ -447,12 +481,19 @@ public class Agent {
 
                 //Update the map
                 map.demolishPOI(curPOI.x, curPOI.y);
-                pois.clear();
-                pois.add(new POI(' ', 0, 0));
-                grabs.clear();
-                grabs.add(new POI(' ', 0, 0));
-                this.haveGold = true;
-                map.printMap();
+
+                haveGold = true;
+
+                if (orient == '^') c_y++;
+                if (orient == 'v') c_y--;
+                if (orient == '>') c_x++;
+                if (orient == '<') c_x--;
+
+                curPOI.interacted = true;
+                curPOI = null;
+                curObj = 0;
+                keys--;
+
                 return 'f';
             }
 
