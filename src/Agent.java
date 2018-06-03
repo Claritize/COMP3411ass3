@@ -62,10 +62,27 @@ public class Agent {
     public char get_action(char view[][]) {
 
         /**
-         * TODO:
-         * - Update agent's state (on water/raft/rock) as it traverses
-         * - Optimize sea-exploration as it is costly (not much code)
-         *      - If we could find a destination across the sea we go for that direct (lots of code)
+         * Summary:
+         * 
+         * I decided to approach this assignment in a way to try and mimic how I would play it if I was the AI,
+         * this led me to write a strategy below which I followed throughout the programming of the AI. 
+         *  
+         * The main data structure I used was the Map, which was a recording of all of the areas the AI has dicovered.
+         * This data structure was crucial for all the smart algorithms used so that it could do more than just randomly
+         * roam around.
+         * 
+         * The algorithms I used to accomplish the strategy included A* search and floodfill. I modified the flood
+         * fill algorithm to do a floodsearch instead, which was very easy to implement for exploring unexplored areas.
+         * I used two versions of A* with difference costs for navigating. 3 were used for onland navigation to items
+         * and points of interest, and one was used to navigate over water. The reason I did this was to streamline
+         * the amount of processing required, restricting what the A* could actually search for.
+         * 
+         * I also used POI (point of interest) and State data struttures to help me keep track of what items I had
+         * interated with, as well as to allow me to create paths for the agent to traverse. 
+         * 
+         * Ultimately, the agent will have a predefined set of rules made using if/else statements which call the appropriate
+         * actions to do the best action in that particular scenario.
+         * 
          */
 
         /**
