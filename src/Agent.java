@@ -127,11 +127,22 @@ public class Agent {
         //If we have the gold jsut go back to starting place
         if (haveGold) {
 
-            State s = map.SmarterAStarTravel(0, 0, c_x, c_y, this, false);
-            currentState = s;
-            stateMove = 0;
-            curPOI = new POI(' ', 0, 0);
-            curObj = 1;                
+            //if we right near start
+            if ((c_x == 0 && c_y == 1) ||
+                (c_x == 0 && c_y == -1) ||
+                (c_x == 1 && c_y == 0) ||
+                (c_x == -1 && c_y == 0)) {
+
+                //In this case we will just try get to it as a poi;
+                curPOI = new POI(' ', 0, 0);
+                curObj = 1;
+            } else {
+                State s = map.SmarterAStarTravel(0, 0, c_x, c_y, this, false);
+                currentState = s;
+                stateMove = 0;
+                curPOI = new POI(' ', 0, 0);
+                curObj = 1;                
+            }
         }
         
         if (curPOI != null && curObj == 5)
@@ -449,6 +460,16 @@ public class Agent {
                 map.demolishPOI(curPOI.x, curPOI.y);
 
                 haveGold = true;
+
+                if (orient == '^') c_y++;
+                if (orient == 'v') c_y--;
+                if (orient == '>') c_x++;
+                if (orient == '<') c_x--;
+
+                curPOI.interacted = true;
+                curPOI = null;
+                curObj = 0;
+                keys--;
 
                 return 'f';
             }
