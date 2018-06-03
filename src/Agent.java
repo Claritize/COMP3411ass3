@@ -168,35 +168,13 @@ public class Agent {
         if (curObj == 0) {
 
             if (grabsComplete < grabs.size()) {
-
-                //If we found treasure we try get that
-                if (found_treasure) {
-
-                    //Get treassure off the pois list
-                    for (POI p : grabs) {
-
-                        if (p.type == '$') {
-
-                            //Now we chec if it's traversable
-                            //If not then we check if we can traverse there
-                            int waters = map.checkTraversable(p.x, p.y, c_x, c_y, true);
-
-                            //If we find a path
-                            if (waters == 0) {
-                                curPOI = p;
-                                curObj = 1;
-                                break;
-                            }
-                        }
-                    }
-                }
                 
                 //If we can't get treasure of there is none found right now
                 if (curObj == 0) {
                     //Look for another POI to get
                     for (POI p : grabs) {
 
-                        if (!p.interacted) {
+                        if (!p.interacted && p.type != '$') {
 
                             //If not then we check if we can traverse there
                             int waters = map.checkTraversable(p.x, p.y, c_x, c_y, true);
@@ -307,7 +285,7 @@ public class Agent {
 
                         for (POI p : grabs) {
 
-                            if (!p.interacted) {
+                            if (!p.interacted && p.type != '$') {
 
                                 State s = map.SmarterAStarTravel(p.x, p.y, c_x, c_y, this, false);
                                 
@@ -438,6 +416,28 @@ public class Agent {
                             if (curPOI != null) {
                                 curPOI.type = '~';
                                 curObj = 5;
+                            }
+                        }
+
+                        //If we found treasure we try get that
+                        if (found_treasure && curObj == 0) {
+
+                            //Get treassure off the pois list
+                            for (POI p : grabs) {
+
+                                if (p.type == '$') {
+
+                                    //Now we chec if it's traversable
+                                    //If not then we check if we can traverse there
+                                    State s = map.SmarterAStarTravel(p.x, p.y, c_x, c_y, this, false);
+
+                                    currentState = s;
+                                    stateMove = 0;
+                                    curPOI = p;
+                                    curObj = 1;
+                                    break;
+                                    
+                                }
                             }
                         }
                     }
