@@ -49,6 +49,7 @@ public class Agent {
     public int curObj = 0;
     public POI curPOI = null;
     public int grabsComplete = 0;
+    public boolean haveGold = false;
 
     //Used for more advanced travelling
     public State currentState = null;
@@ -88,9 +89,6 @@ public class Agent {
          *      1. If we need to cross water to go back, go back to step 1 and redo all proceeding steps 
          *         with going back to [0,0] as objective
          */
-
-        //If the treasure is in front of us just get it lel
-        if (view[1][2] == '$') return 'f';
         
         map.addMap(view, orient, c_x, c_y);
         System.out.println("current_orient = " + orient);
@@ -125,6 +123,16 @@ public class Agent {
 
         //Check if we are at the explored location, this is only required for sea exploration since it works a bit differently
         //to normal exploration
+
+        //If we have the gold jsut go back to starting place
+        if (haveGold) {
+
+            State s = map.SmarterAStarTravel(0, 0, c_x, c_y, this, false);
+            currentState = s;
+            stateMove = 0;
+            curPOI = new POI(' ', 0, 0);
+            curObj = 1;                
+        }
         
         if (curPOI != null && curObj == 5)
             if (map.explored(curPOI.x, curPOI.y)) {
@@ -431,6 +439,19 @@ public class Agent {
         time++;
         //We move to our current objective
         if (time < 2000) {
+
+            //Get gold if it's gold
+            if (view[1][2] == '$') {
+
+                System.out.println("getting goldddddddddddddddddddddddddddddddddddddddddddddddd");
+
+                //Update the map
+                map.demolishPOI(curPOI.x, curPOI.y);
+
+                haveGold = true;
+
+                return 'f';
+            }
 
             //If current objective is to unlock a door and we are facing the door
             if (curObj == 2 && view[1][2] == '-') {
