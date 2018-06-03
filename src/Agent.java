@@ -163,7 +163,7 @@ public class Agent {
         }
 
         if (curPOI != null && curObj == SEA)
-            if (map.explored(curPOI.x, curPOI.y)) { //WHY HOW IS THIS CONDN NEEDED/WORKS
+            if (map.explored(curPOI.x, curPOI.y)) { 
                 curObj = EXPLORE;
                 curPOI = null;
 
@@ -264,14 +264,12 @@ public class Agent {
 
                     if (curPOI == null && axe > 0) { 
 
-                        //If we have an axe look for a tree to cut down   //THIS SHOULDN'T BE PRIORITY, AXES ARE PERMANENT ITEMS 
-                                                                          //WOULD MEAN YOU KEEP CUTTING - AGENT ONLY KEEPS ONE RAFT AT A TIME
-                                                                          //ACTUALLY wouldn't keep cutting..cos exploration is only done once?!-should be looped strattegy
+                        //If we have an axe look for a tree to cut down 
                                                                             
                         for (POI p : pois) {
 
                             //Check if the poi has been interacted
-                            if (!p.interacted && p.type == 'T' && raft == false) {//SO ADDED THE CHECK FOR HAS A RAFT ALREADY HERE (this compiled and ran)
+                            if (!p.interacted && p.type == 'T' && raft == false) {//SO ADDED THE CHECK FOR HAS A RAFT ALREADY HERE
                                 
                                 //If not then we check if we can traverse there
                                 int waters = map.checkTraversableT(p.x, p.y, c_x, c_y);
