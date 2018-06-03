@@ -259,6 +259,8 @@ public class Agent {
                                     //Set current POI to this location
                                     curPOI = p;
                                     curObj = 2;
+                                    currentState = null;
+                                    stateMove = 0;
 
                                     break;
                                 }
@@ -283,6 +285,8 @@ public class Agent {
                                     //Set current POI to this location
                                     curPOI = p;
                                     curObj = 3;
+                                    currentState = null;
+                                    stateMove = 0;
 
                                     break;
                                 }
