@@ -719,8 +719,16 @@ public class Map {
             if (current.moves.size() > 0) return current.moves.get(0);
         }
 
-        System.out.println("we shouldn't be here");
-        System.exit(0);
+        System.out.println("we shouldn't be here Normal");
+        //System.exit(0);
+
+        // for (int i = 50; i < 110; i++) {
+        //     for (int j = 50; j < 110; j++) {
+        //         System.out.print(mapCopy[i][j]);
+        //     }
+        //     System.out.print('\n');
+        // }
+
         return 'f';
     }
 
@@ -1541,7 +1549,668 @@ public class Map {
             //Reset current to null so it works with our algorithm
             current = null;
         }
+               
+        // for (int i = 50; i < 110; i++) {
+        //     for (int j = 50; j < 110; j++) {
+        //         System.out.print(mapCopy[i][j]);
+        //     }
+        //     System.out.print('\n');
+        // }
+        
+        //Return the current state
+        return current;
+    }
 
+/**
+     * Smarter A* to travel from c to x,y
+     * This algorithm takes into account bodies of water that need to e traversed
+     * and used limited resources in the most intelligent way
+     */
+    public State HomeAStarTravel(int x, int y, int c_x, int c_y, Agent a, boolean interactable) {
+        
+        //Convert co-ordinates to map's scope
+        int mx = 80 + x;
+        int my = 80 - y;
+        int mc_x = 80 + c_x;
+        int mc_y = 80 - c_y;
+
+        System.out.println("from " + mc_x + " , " + mc_y + " to " + mx + " , " + my);
+        //Copy map used to mark searched 
+        char [][] mapCopy = new char[map.length][];
+        for(int i = 0; i < map.length; i++)
+            mapCopy[i] = map[i].clone();
+
+        //Queue of states
+        PriorityQueue<State> states = new PriorityQueue<State>(new StateComparator());
+
+        //Add initial state
+        states.offer(new State(mc_x, mc_y, 0));
+        //Mark initial state as visited
+        mapCopy[mc_y][mc_x] = '&';
+
+        //Add the current tools/etc stats of the agent to the state
+        states.peek().raft = a.raft;
+        states.peek().stones = a.stones;
+        states.peek().axe = a.axe;
+        states.peek().keys = a.keys;
+        states.peek().on_water = a.on_water;
+        states.peek().on_raft = a.on_raft;
+        states.peek().on_rock = a.on_rock;
+        states.peek().found_treasure = a.found_treasure;
+
+        State current = null;
+
+        //Looping through priority queue
+        while (states.size() > 0) {
+            /*
+            for (int i = 65; i < 95; i++) {
+                for (int j = 65; j < 125; j++) {
+                    System.out.print(mapCopy[i][j]);
+                }
+                System.out.print('\n');
+            }
+            */
+            //Pop off from the queue
+            current = states.poll();
+
+            //Set current tile as explored
+            mapCopy[current.y][current.x] = '&';
+            //System.out.println("wew " + current.x + " , " + current.y + " to " + mx + " , " + my);
+
+            //Check if we are at the goal state
+            if (current.x == mx && current.y == my) break;
+
+            //If it's an interactable, if the next step is facing it, we can just return that
+            if (interactable) {
+                if (current.x == mx && current.y+1 == my) {
+                    current.moves.add('v');
+                    break;
+                }
+                if (current.x == mx && current.y-1 == my) {
+                    current.moves.add('^');
+                    break;
+                }
+                if (current.x+1 == mx && current.y == my) {
+                    current.moves.add('>');
+                    break;
+                }
+                if (current.x-1 == mx && current.y == my) {
+                    current.moves.add('<');
+                    break;
+                }
+            }
+
+            //Expand states around current and add to queue
+            if (mapCopy[current.y+1][current.x] != '&' &&
+                mapCopy[current.y+1][current.x] != '*' &&
+                mapCopy[current.y+1][current.x] != '.' &&
+                mapCopy[current.y+1][current.x] != 'T' &&
+                mapCopy[current.y+1][current.x] != '=' &&
+                mapCopy[current.y+1][current.x] != '-') {
+
+                //Check if it's water
+                if (mapCopy[current.y+1][current.x] == '~') {
+                
+                    //If we are on a raft then it is traversable
+                    if (current.on_water && current.on_raft) {
+
+                        //If traversable then make a state for it
+                        //Calculate manhattan distance
+                        int cost = current.moves.size() + 1;
+                        cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+
+                        //lowering cost bonuses
+                        if (current.stones > 0) cost /= current.stones;
+                        
+                        State newState = new State(current.x, current.y+1, cost);
+                        //Add the new path
+                        for (Character c : current.moves) {
+                            newState.moves.add(c);
+                        }
+                        //Add the upper movement
+                        newState.moves.add('v');
+
+                        newState.raft = current.raft;
+                        newState.stones = current.stones;
+                        newState.axe = current.axe;
+                        newState.keys = current.keys;
+                        newState.on_water = current.on_water;
+                        newState.on_rock = current.on_rock;
+                        newState.on_raft = current.on_raft;
+                        newState.found_treasure = current.found_treasure;
+
+                        states.offer(newState);
+                    
+                    //If we have rocks we have to use them
+                    } else if (current.stones > 0) {
+
+                        //If traversable then make a state for it
+                        //Calculate manhattan distance
+                        int cost = current.moves.size() + 1;
+                        cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+
+                        //lowering cost bonuses
+                        if (current.stones > 0) cost /= current.stones;
+                        if (current.raft) cost /= 2;
+                        
+                        State newState = new State(current.x, current.y+1, cost);
+                        //Add the new path
+                        for (Character c : current.moves) {
+                            newState.moves.add(c);
+                        }
+                        //Add the upper movement
+                        newState.moves.add('v');
+
+                        newState.raft = current.raft;
+                        newState.stones = current.stones - 1;
+                        newState.axe = current.axe;
+                        newState.keys = current.keys;
+                        newState.on_water = true;
+                        newState.on_rock = true;
+                        newState.on_raft = current.on_raft;
+                        newState.found_treasure = current.found_treasure;
+
+                        states.offer(newState);
+                    
+                    //If we have no rocks, try embark on raft
+                    } else if (current.raft) {
+
+                        //If traversable then make a state for it
+                        //Calculate manhattan distance
+                        int cost = current.moves.size() + 1;
+                        cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+
+                        State newState = new State(current.x, current.y+1, cost);
+                        //Add the new path
+                        for (Character c : current.moves) {
+                            newState.moves.add(c);
+                        }
+                        //Add the upper movement
+                        newState.moves.add('v');
+
+                        newState.raft = false;
+                        newState.stones = current.stones;
+                        newState.axe = current.axe;
+                        newState.keys = current.keys;
+                        newState.on_water = true;
+                        newState.on_rock = current.on_rock;
+                        newState.on_raft = true;
+                        newState.found_treasure = current.found_treasure;
+
+                        states.offer(newState);
+
+                    } else {
+
+                        //We have no means of continuing this path without DEATHHHHH
+                    }
+
+                } else {
+
+                    //Otherwise it's land so we need to calculate a general cost for it
+                    //If traversable then make a state for it
+                    //Calculate manhattan distance
+                    int cost = current.moves.size() + 1;
+                    cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+
+                    //lowering cost bonuses
+                    if (current.stones > 0) cost /= current.stones;
+                    if (current.raft) cost /= 2;
+                    
+                    State newState = new State(current.x, current.y+1, cost);
+                    //Add the new path
+                    for (Character c : current.moves) {
+                        newState.moves.add(c);
+                    }
+                    //Add the upper movement
+                    newState.moves.add('v');
+
+                    newState.raft = current.raft;
+                    newState.stones = current.stones;
+                    newState.axe = current.axe;
+                    newState.keys = current.keys;
+                    newState.on_water = false;
+                    newState.on_rock = false;
+                    newState.on_raft = false;
+                    newState.found_treasure = current.found_treasure;
+
+                    states.offer(newState);
+                }
+            }
+            //Expand states around current and add to queue
+            if (mapCopy[current.y-1][current.x] != '&' &&
+                mapCopy[current.y-1][current.x] != '*' &&
+                mapCopy[current.y-1][current.x] != '.' &&
+                mapCopy[current.y-1][current.x] != 'T' &&
+                mapCopy[current.y-1][current.x] != '=' &&
+                mapCopy[current.y-1][current.x] != '-') {
+
+                //Check if it's water
+                if (mapCopy[current.y-1][current.x] == '~') {
+                
+                    //If we are on a raft then it is traversable
+                    if (current.on_water && current.on_raft) {
+
+                        //If traversable then make a state for it
+                        //Calculate manhattan distance
+                        int cost = current.moves.size() + 1;
+                        cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+
+                        //lowering cost bonuses
+                        if (current.stones > 0) cost /= current.stones;
+                        
+                        State newState = new State(current.x, current.y-1, cost);
+                        //Add the new path
+                        for (Character c : current.moves) {
+                            newState.moves.add(c);
+                        }
+                        //Add the upper movement
+                        newState.moves.add('^');
+
+                        newState.raft = current.raft;
+                        newState.stones = current.stones;
+                        newState.axe = current.axe;
+                        newState.keys = current.keys;
+                        newState.on_water = current.on_water;
+                        newState.on_rock = current.on_rock;
+                        newState.on_raft = current.on_raft;
+                        newState.found_treasure = current.found_treasure;
+
+                        states.offer(newState);
+                    
+                    //If we have rocks we have to use them
+                    } else if (current.stones > 0) {
+
+                        //If traversable then make a state for it
+                        //Calculate manhattan distance
+                        int cost = current.moves.size() + 1;
+                        cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+
+                        //lowering cost bonuses
+                        if (current.stones > 0) cost /= current.stones;
+                        if (current.raft) cost /= 2;
+
+                        State newState = new State(current.x, current.y-1, cost);
+                        //Add the new path
+                        for (Character c : current.moves) {
+                            newState.moves.add(c);
+                        }
+                        //Add the upper movement
+                        newState.moves.add('^');
+
+                        newState.raft = current.raft;
+                        newState.stones = current.stones - 1;
+                        newState.axe = current.axe;
+                        newState.keys = current.keys;
+                        newState.on_water = true;
+                        newState.on_rock = true;
+                        newState.on_raft = current.on_raft;
+                        newState.found_treasure = current.found_treasure;
+
+                        states.offer(newState);
+                    
+                    //If we have no rocks, try embark on raft
+                    } else if (current.raft) {
+
+                        //If traversable then make a state for it
+                        //Calculate manhattan distance
+                        int cost = current.moves.size() + 1;
+                        cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+
+                        State newState = new State(current.x, current.y-1, cost);
+                        //Add the new path
+                        for (Character c : current.moves) {
+                            newState.moves.add(c);
+                        }
+                        //Add the upper movement
+                        newState.moves.add('^');
+
+                        newState.raft = false;
+                        newState.stones = current.stones;
+                        newState.axe = current.axe;
+                        newState.keys = current.keys;
+                        newState.on_water = true;
+                        newState.on_rock = current.on_rock;
+                        newState.on_raft = true;
+                        newState.found_treasure = current.found_treasure;
+
+                        states.offer(newState);
+
+                    } else {
+
+                        //We have no means of continuing this path without DEATHHHHH
+                    }
+
+                } else {
+
+                    //Otherwise it's land so we need to calculate a general cost for it
+                    //If traversable then make a state for it
+                    //Calculate manhattan distance
+                    int cost = current.moves.size() + 1;
+                    cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+
+                    //lowering cost bonuses
+                    if (current.stones > 0) cost /= current.stones;
+                    if (current.raft) cost /= 2;
+
+                    //Setting state
+                    current.on_water = false;
+                    current.on_rock = false;
+                    current.on_raft = false;
+                    
+                    State newState = new State(current.x, current.y-1, cost);
+                    //Add the new path
+                    for (Character c : current.moves) {
+                        newState.moves.add(c);
+                    }
+                    //Add the upper movement
+                    newState.moves.add('^');
+
+                    newState.raft = current.raft;
+                    newState.stones = current.stones;
+                    newState.axe = current.axe;
+                    newState.keys = current.keys;
+                    newState.on_water = false;
+                    newState.on_rock = false;
+                    newState.on_raft = false;
+                    newState.found_treasure = current.found_treasure;
+
+                    states.offer(newState);
+                }
+            }
+            //Expand states around current and add to queue
+            if (mapCopy[current.y][current.x+1] != '&' &&
+                mapCopy[current.y][current.x+1] != '*' &&
+                mapCopy[current.y][current.x+1] != '.' &&
+                mapCopy[current.y][current.x+1] != 'T' &&
+                mapCopy[current.y][current.x+1] != '=' &&
+                mapCopy[current.y][current.x+1] != '-') {
+
+                //Check if it's water
+                if (mapCopy[current.y][current.x+1] == '~') {
+                
+                    //If we are on a raft then it is traversable
+                    if (current.on_water && current.on_raft) {
+
+                        //If traversable then make a state for it
+                        //Calculate manhattan distance
+                        int cost = current.moves.size() + 1;
+                        cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+
+                        //lowering cost bonuses
+                        if (current.stones > 0) cost /= current.stones;
+                        
+                        State newState = new State(current.x+1, current.y, cost);
+                        //Add the new path
+                        for (Character c : current.moves) {
+                            newState.moves.add(c);
+                        }
+                        //Add the upper movement
+                        newState.moves.add('>');
+
+                        newState.raft = current.raft;
+                        newState.stones = current.stones;
+                        newState.axe = current.axe;
+                        newState.keys = current.keys;
+                        newState.on_water = current.on_water;
+                        newState.on_rock = current.on_rock;
+                        newState.on_raft = current.on_raft;
+                        newState.found_treasure = current.found_treasure;
+
+                        states.offer(newState);
+                    
+                    //If we have rocks we have to use them
+                    } else if (current.stones > 0) {
+
+                        //If traversable then make a state for it
+                        //Calculate manhattan distance
+                        int cost = current.moves.size() + 1;
+                        cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+
+                        //lowering cost bonuses
+                        if (current.stones > 0) cost /= current.stones;
+                        if (current.raft) cost /= 2;
+                        
+                        State newState = new State(current.x+1, current.y, cost);
+                        //Add the new path
+                        for (Character c : current.moves) {
+                            newState.moves.add(c);
+                        }
+                        //Add the upper movement
+                        newState.moves.add('>');
+
+                        newState.raft = current.raft;
+                        newState.stones = current.stones - 1;
+                        newState.axe = current.axe;
+                        newState.keys = current.keys;
+                        newState.on_water = true;
+                        newState.on_rock = true;
+                        newState.on_raft = current.on_raft;
+                        newState.found_treasure = current.found_treasure;
+
+                        states.offer(newState);
+                    
+                    //If we have no rocks, try embark on raft
+                    } else if (current.raft) {
+
+                        //If traversable then make a state for it
+                        //Calculate manhattan distance
+                        int cost = current.moves.size() + 1;
+                        cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+                        
+                        State newState = new State(current.x+1, current.y, cost);
+                        //Add the new path
+                        for (Character c : current.moves) {
+                            newState.moves.add(c);
+                        }
+                        //Add the upper movement
+                        newState.moves.add('>');
+
+                        newState.raft = false;
+                        newState.stones = current.stones;
+                        newState.axe = current.axe;
+                        newState.keys = current.keys;
+                        newState.on_water = true;
+                        newState.on_rock = current.on_rock;
+                        newState.on_raft = true;
+                        newState.found_treasure = current.found_treasure;
+
+                        states.offer(newState);
+
+                    } else {
+
+                        //We have no means of continuing this path without DEATHHHHH
+                    }
+
+                } else {
+
+                    //Otherwise it's land so we need to calculate a general cost for it
+                    //If traversable then make a state for it
+                    //Calculate manhattan distance
+                    int cost = current.moves.size() + 1;
+                    cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+
+                    //lowering cost bonuses
+                    if (current.stones > 0) cost /= current.stones;
+                    if (current.raft) cost /= 2;
+
+                    //Setting state
+                    current.on_water = false;
+                    current.on_rock = false;
+                    current.on_raft = false;
+                    
+                    State newState = new State(current.x+1, current.y, cost);
+                    //Add the new path
+                    for (Character c : current.moves) {
+                        newState.moves.add(c);
+                    }
+                    //Add the upper movement
+                    newState.moves.add('>');
+
+                    newState.raft = current.raft;
+                    newState.stones = current.stones;
+                    newState.axe = current.axe;
+                    newState.keys = current.keys;
+                    newState.on_water = false;
+                    newState.on_rock = false;
+                    newState.on_raft = false;
+                    newState.found_treasure = current.found_treasure;
+
+                    states.offer(newState);
+                }
+            }
+            //Expand states around current and add to queue
+            if (mapCopy[current.y][current.x-1] != '&' &&
+                mapCopy[current.y][current.x-1] != '*' &&
+                mapCopy[current.y][current.x-1] != '.' &&
+                mapCopy[current.y][current.x-1] != 'T' &&
+                mapCopy[current.y][current.x-1] != '=' &&
+                mapCopy[current.y][current.x-1] != '-') {
+
+                //Check if it's water
+                if (mapCopy[current.y][current.x-1] == '~') {
+                
+                    //If we are on a raft then it is traversable
+                    if (current.on_water && current.on_raft) {
+
+                        //If traversable then make a state for it
+                        //Calculate manhattan distance
+                        int cost = current.moves.size() + 1;
+                        cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+
+                        //lowering cost bonuses
+                        if (current.stones > 0) cost /= current.stones;
+                        
+                        State newState = new State(current.x-1, current.y, cost);
+                        //Add the new path
+                        for (Character c : current.moves) {
+                            newState.moves.add(c);
+                        }
+                        //Add the upper movement
+                        newState.moves.add('<');
+
+                        newState.raft = current.raft;
+                        newState.stones = current.stones;
+                        newState.axe = current.axe;
+                        newState.keys = current.keys;
+                        newState.on_water = current.on_water;
+                        newState.on_rock = current.on_rock;
+                        newState.on_raft = current.on_raft;
+                        newState.found_treasure = current.found_treasure;
+
+                        states.offer(newState);
+                    
+                    //If we have rocks we have to use them
+                    } else if (current.stones > 0) {
+
+                        //If traversable then make a state for it
+                        //Calculate manhattan distance
+                        int cost = current.moves.size() + 1;
+                        cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+
+                        //lowering cost bonuses
+                        if (current.stones > 0) cost /= current.stones;
+                        if (current.raft) cost /= 2;
+                        
+                        State newState = new State(current.x-1, current.y, cost);
+                        //Add the new path
+                        for (Character c : current.moves) {
+                            newState.moves.add(c);
+                        }
+                        //Add the upper movement
+                        newState.moves.add('<');
+
+                        newState.raft = current.raft;
+                        newState.stones = current.stones - 1;
+                        newState.axe = current.axe;
+                        newState.keys = current.keys;
+                        newState.on_water = true;
+                        newState.on_rock = true;
+                        newState.on_raft = current.on_raft;
+                        newState.found_treasure = current.found_treasure;
+
+                        states.offer(newState);
+                    
+                    //If we have no rocks, try embark on raft
+                    } else if (current.raft) {
+
+                        //If traversable then make a state for it
+                        //Calculate manhattan distance
+                        int cost = current.moves.size() + 1;
+                        cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+                        
+                        State newState = new State(current.x-1, current.y, cost);
+                        //Add the new path
+                        for (Character c : current.moves) {
+                            newState.moves.add(c);
+                        }
+                        //Add the upper movement
+                        newState.moves.add('<');
+
+                        newState.raft = false;
+                        newState.stones = current.stones;
+                        newState.axe = current.axe;
+                        newState.keys = current.keys;
+                        newState.on_water = true;
+                        newState.on_rock = current.on_rock;
+                        newState.on_raft = true;
+                        newState.found_treasure = current.found_treasure;
+
+                        states.offer(newState);
+
+                    } else {
+
+                        //We have no means of continuing this path without DEATHHHHH
+                    }
+
+                } else {
+
+                    //Otherwise it's land so we need to calculate a general cost for it
+                    //If traversable then make a state for it
+                    //Calculate manhattan distance
+                    int cost = current.moves.size() + 1;
+                    cost += Math.abs(current.x - mx) + Math.abs(current.y - my);
+
+                    //lowering cost bonuses
+                    if (current.stones > 0) cost /= current.stones;
+                    if (current.raft) cost /= 2;
+
+                    //Setting state
+                    current.on_water = false;
+                    current.on_rock = false;
+                    current.on_raft = false;
+                    
+                    State newState = new State(current.x-1, current.y, cost);
+                    //Add the new path
+                    for (Character c : current.moves) {
+                        newState.moves.add(c);
+                    }
+                    //Add the upper movement
+                    newState.moves.add('<');
+
+                    newState.raft = current.raft;
+                    newState.stones = current.stones;
+                    newState.axe = current.axe;
+                    newState.keys = current.keys;
+                    newState.on_water = false;
+                    newState.on_rock = false;
+                    newState.on_raft = false;
+                    newState.found_treasure = current.found_treasure;
+
+                    states.offer(newState);
+                }
+            }
+
+            //Reset current to null so it works with our algorithm
+            current = null;
+        }
+               
+        // for (int i = 50; i < 110; i++) {
+        //     for (int j = 50; j < 110; j++) {
+        //         System.out.print(mapCopy[i][j]);
+        //     }
+        //     System.out.print('\n');
+        // }
+        
         //Return the current state
         return current;
     }

@@ -119,14 +119,16 @@ public class Agent {
 
         //If we have the gold jsut go back to starting place
         if (haveGold) {
-
-            State s = map.SmarterAStarTravel(0, 0, c_x, c_y, this, false);
+            State s = map.HomeAStarTravel(0, 0, c_x, c_y, this, false);
+            // if (s == null)
+            //     System.out.println("HAVE GOLD STATE IS NULL!!!!");
             currentState = s;
             stateMove = 0;
             curPOI = new POI(' ', 0, 0);
-            curObj = 1;                
+            curObj = GRAB;
+            System.out.println("WE GOT THE GOALD");           
         }
-        
+
         if (curPOI != null && curObj == SEA)
             if (map.explored(curPOI.x, curPOI.y)) { //WHY HOW IS THIS CONDN NEEDED/WORKS
                 curObj = EXPLORE;
@@ -252,8 +254,8 @@ public class Agent {
 
                     if (curPOI == null && axe > 0) { 
 
-                        //If we have an axe look for a tree to cut down   //THIS SHOULDN'TBE PRIORITY, AXES ARE PERMANENT ITEMS 
-                                                                            //WOULD MEAN YOU KEEP CUTTING- AGENT ONLY KEEPS ONE RAFT AT A TIME
+                        //If we have an axe look for a tree to cut down   //THIS SHOULDN'T BE PRIORITY, AXES ARE PERMANENT ITEMS 
+                                                                          //WOULD MEAN YOU KEEP CUTTING - AGENT ONLY KEEPS ONE RAFT AT A TIME
                                                                           //ACTUALLY wouldn't keep cutting..cos exploration is only done once?!-should be looped strattegy
                                                                             
                         for (POI p : pois) {
@@ -436,7 +438,7 @@ public class Agent {
 
         time++;
         //We move to our current objective
-        if (time < 2000) {
+        if (time < 10000) {
 
             //Get gold if it's gold
             if (view[1][2] == '$') {
@@ -445,9 +447,12 @@ public class Agent {
 
                 //Update the map
                 map.demolishPOI(curPOI.x, curPOI.y);
-
-                haveGold = true;
-
+                pois.clear();
+                pois.add(new POI(' ', 0, 0));
+                grabs.clear();
+                grabs.add(new POI(' ', 0, 0));
+                this.haveGold = true;
+                map.printMap();
                 return 'f';
             }
 
@@ -490,27 +495,36 @@ public class Agent {
             
             //If currentState is set, that means we have a calculate path to travel on
             if (currentState != null) {
+                System.out.print("move: ");
+                for (Character move: currentState.moves){
+                    System.out.print(move);
+                }
+                System.out.print("\n");
+
                 travelDir = currentState.moves.get(stateMove);
+                map.printMap();
+                System.out.println("Travel DIR: " + travelDir);
             }
             //If this isn't water travel
             else if (curObj != SEA) travelDir = map.AStarTravel(curPOI.x, curPOI.y, c_x, c_y, curPOI.type);
             //If it is
             else travelDir = map.AStarTravelW(curPOI.x, curPOI.y, c_x, c_y, on_water);
-
             System.out.println("direction: " + travelDir);
             if (orient == travelDir) {
 
                 //If current state is set we need to increment stateMove
                 if (currentState != null) stateMove++;
-
-                if (orient == '^') {
-                    c_y++;
-                } else if (orient == 'v') {
-                    c_y--;
-                } else if (orient == '>') {
-                    c_x++;
-                } else {
-                    c_x--;
+                if (view[1][2] != '*') {
+                    if (orient == '^') {
+                        c_y++;
+                    } else if (orient == 'v') {
+                        c_y--;
+                    } else if (orient == '>') {
+                        c_x++;
+                    } else {
+                        c_x--;
+                    }
+        
                 }
 
                 //Agent state changes
@@ -702,6 +716,7 @@ public class Agent {
         map.printMap();
         printPOI();
         //System.out.println("uh" + curPOI.x + "," + curPOI.y);
+        System.out.print("I AM IN HERE T_T");
         System.exit(0);
         return 'f';
     }
@@ -936,6 +951,7 @@ public class Agent {
         }
     }
 
+    
     void print_view(char view[][]) {
         int i, j;
 
