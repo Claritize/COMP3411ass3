@@ -47,6 +47,7 @@ public class Agent {
     public int curObj = EXPLORE;
     public POI curPOI = null;
     public int grabsComplete = 0;
+    public boolean haveGold = false;
 
     //Used for more advanced travelling
     public State currentState = null;
@@ -81,16 +82,10 @@ public class Agent {
          *         with going back to [0,0] as objective
          * 
          */
-
-        //Get the treasure if it is front of us
-        if (view[1][2] == '$'){
-            return 'f';
-        }
-
         
         map.addMap(view, orient, c_x, c_y);
         System.out.println("current_orient = " + orient);
-        map.printMap();
+        //map.printMap();
         System.out.println("AgentPOS = " + c_x + "," + c_y);
         System.out.println("axes = " + axe + " keys = " + keys + " raft = " + raft + " stones = " + stones);
         System.out.println("on water = " + on_water + " on rock = " + on_rock + " on raft = " + on_raft);
@@ -121,8 +116,18 @@ public class Agent {
 
         //Check if we are at the explored location, this is only required for sea exploration since it works a bit differently
         //to normal exploration
+
+        //If we have the gold jsut go back to starting place
+        if (haveGold) {
+
+            State s = map.SmarterAStarTravel(0, 0, c_x, c_y, this, false);
+            currentState = s;
+            stateMove = 0;
+            curPOI = new POI(' ', 0, 0);
+            curObj = 1;                
+        }
         
-        if (curPOI != null)
+        if (curPOI != null && curObj == SEA)
             if (map.explored(curPOI.x, curPOI.y)) { //WHY HOW IS THIS CONDN NEEDED/WORKS
                 curObj = EXPLORE;
                 curPOI = null;
@@ -271,37 +276,6 @@ public class Agent {
                             }
                         }
                     } 
-                    
-                    if (curObj == EXPLORE) {
-
-                        //If we get here it means we have explored all possible land and got every item we can get to :')
-                        //Now we look towards exploring the sea
-                        //Traversing bodies of water is difficult, so we must use resources carefully,
-                        //If we are on a raft we want to try explore on the water as much as we can before disembarking
-                        if (on_water && on_raft) {
-
-                            //Call the water flood search
-                            curPOI = map.floodSearchW(c_x, c_y); //WHAT DOES THIS GIVE ME?
-
-                            //If we find more water to explore
-                            if (curPOI != null) {
-                                curPOI.type = '~';
-                                curObj = SEA;
-                                System.out.println("Explrong waaatterrr");
-                            }
-                        }
-                        
-                        //If the current objective is still to explore
-                        if (curObj == EXPLORE) {
-                            curPOI = map.floodSearch(c_x, c_y, true);
-
-                            //If we find a body of water to cross
-                            if (curPOI != null) {
-                                curPOI.type = '~';
-                                curObj = SEA;
-                            }
-                        }
-                    }
                                         
                     //If we get to this point, it means that there are no easy grabbables (on land no water traversle)
                     //And no more water exploration
@@ -414,6 +388,42 @@ public class Agent {
                             else curObj = UNLOCK;
                         }
                     }
+                    
+                    if (curObj == 0) {
+
+                        //If we get here it means we have explored all possible land and got every item we can get to :')
+                        //Oh my god rankini it is 5am and it's almost donnneneeeeeeeeeeeeeeeeee hentaihavennnn
+
+                        //Now we look towards exploring the sea
+                        //This feels like unlocking a new area in an RPG holy crap it feels good
+
+                        //Traversing bodies of water is difficult, so we must use resources carefully,
+
+                        //If we are on a raft we want to try explore on the water as much as we can before disembarking
+                        if (on_water && on_raft) {
+
+                            //Call the water flood search
+                            curPOI = map.floodSearchW(c_x, c_y);
+
+                            //If we find more water to exploire
+                            if (curPOI != null) {
+                                curPOI.type = '~';
+                                curObj = 5;
+                                System.out.println("Explrong waaatterrr");
+                            }
+                        }
+                        
+                        //If the current objective is still 0
+                        if (curObj == 0) {
+                            curPOI = map.floodSearch(c_x, c_y, true);
+
+                            //If we find a body of water to cross
+                            if (curPOI != null) {
+                                curPOI.type = '~';
+                                curObj = 5;
+                            }
+                        }
+                    }
 
                 } else {
 
@@ -427,6 +437,19 @@ public class Agent {
         time++;
         //We move to our current objective
         if (time < 2000) {
+
+            //Get gold if it's gold
+            if (view[1][2] == '$') {
+
+                System.out.println("getting goldddddddddddddddddddddddddddddddddddddddddddddddd");
+
+                //Update the map
+                map.demolishPOI(curPOI.x, curPOI.y);
+
+                haveGold = true;
+
+                return 'f';
+            }
 
             //If current objective is to unlock a door and we are facing the door
             if (curObj == UNLOCK && view[1][2] == '-') {
