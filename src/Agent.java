@@ -10,6 +10,52 @@ import java.util.*;
 import java.io.*;
 import java.net.*;
 
+        /**
+         * Summary:
+         * 
+         * I decided to approach this assignment in a way to try and mimic how I would play it if I was the AI,
+         * this led me to write a strategy below which I followed throughout the programming of the AI. 
+         *  
+         * The main data structure I used was the Map, which was a recording of all of the areas the AI has dicovered.
+         * This data structure was crucial for all the smart algorithms used so that it could do more than just randomly
+         * roam around.
+         * 
+         * The algorithms I used to accomplish the strategy included A* search and floodfill. I modified the flood
+         * fill algorithm to do a floodsearch instead, which was very easy to implement for exploring unexplored areas.
+         * I used two versions of A* with difference costs for navigating. 3 were used for onland navigation to items
+         * and points of interest, and one was used to navigate over water. The reason I did this was to streamline
+         * the amount of processing required, restricting what the A* could actually search for.
+         * 
+         * I also used POI (point of interest) and State data struttures to help me keep track of what items I had
+         * interated with, as well as to allow me to create paths for the agent to traverse. 
+         * 
+         * Ultimately, the agent will have a predefined set of rules made using if/else statements which call the appropriate
+         * actions to do the best action in that particular scenario.
+         * 
+         */
+
+        /**
+         * Strategy
+         * 
+         * 1. Look around to pick up items and record points of interests, will attempt to explore
+         *    entire traversable area before crossing waters
+         * 2. With area explored, attempts logical steps in this fashion
+         *    1. If have key try to unlock door
+         *      1. If door covered by small (1 square) water, try cross water
+         *        1. Use rock first otherwise
+         *        2. No rocks then we use raft
+         *      2. If larger body of water we must use raft
+         *    2. If we don't have a key, try cut down all near by trees and explore new explorable area
+         *       then go back to 1.
+         *    3. If we have explored all areas, unlocked all doors and picked everythingu p, we attempt to cross
+         *       water and explore the all explorable water before embarking on land
+         *      1. Attempt to formulate plan to get back on water, look for more trees
+         *    4. Embark on land and go back to 1. 
+         *    5. If we see treasure, make sure we get it
+         *      1. If we need to cross water to go back, go back to step 1 and redo all proceeding steps 
+         *         with going back to [0,0] as objective
+         */
+        
 public class Agent {
 
     public boolean raft = false;
@@ -61,52 +107,6 @@ public class Agent {
 
     public char get_action(char view[][]) {
 
-        /**
-         * Summary:
-         * 
-         * I decided to approach this assignment in a way to try and mimic how I would play it if I was the AI,
-         * this led me to write a strategy below which I followed throughout the programming of the AI. 
-         *  
-         * The main data structure I used was the Map, which was a recording of all of the areas the AI has dicovered.
-         * This data structure was crucial for all the smart algorithms used so that it could do more than just randomly
-         * roam around.
-         * 
-         * The algorithms I used to accomplish the strategy included A* search and floodfill. I modified the flood
-         * fill algorithm to do a floodsearch instead, which was very easy to implement for exploring unexplored areas.
-         * I used two versions of A* with difference costs for navigating. 3 were used for onland navigation to items
-         * and points of interest, and one was used to navigate over water. The reason I did this was to streamline
-         * the amount of processing required, restricting what the A* could actually search for.
-         * 
-         * I also used POI (point of interest) and State data struttures to help me keep track of what items I had
-         * interated with, as well as to allow me to create paths for the agent to traverse. 
-         * 
-         * Ultimately, the agent will have a predefined set of rules made using if/else statements which call the appropriate
-         * actions to do the best action in that particular scenario.
-         * 
-         */
-
-        /**
-         * Strategy
-         * 
-         * 1. Look around to pick up items and record points of interests, will attempt to explore
-         *    entire traversable area before crossing waters
-         * 2. With area explored, attempts logical steps in this fashion
-         *    1. If have key try to unlock door
-         *      1. If door covered by small (1 square) water, try cross water
-         *        1. Use rock first otherwise
-         *        2. No rocks then we use raft
-         *      2. If larger body of water we must use raft
-         *    2. If we don't have a key, try cut down all near by trees and explore new explorable area
-         *       then go back to 1.
-         *    3. If we have explored all areas, unlocked all doors and picked everythingu p, we attempt to cross
-         *       water and explore the all explorable water before embarking on land
-         *      1. Attempt to formulate plan to get back on water, look for more trees
-         *    4. Embark on land and go back to 1. 
-         *    5. If we see treasure, make sure we get it
-         *      1. If we need to cross water to go back, go back to step 1 and redo all proceeding steps 
-         *         with going back to [0,0] as objective
-         */
-        
         map.addMap(view, orient, c_x, c_y);
         System.out.println("current_orient = " + orient);
         //map.printMap();
